@@ -1,0 +1,8 @@
+# Ignore IDE
+.vscode
+nbproject
+dist
+nbbuild
+
+# Ignore app config
+docker-compose.override.yml
