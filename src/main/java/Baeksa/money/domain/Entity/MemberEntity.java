@@ -37,19 +37,8 @@ public class MemberEntity {
 //    private Active active;
 
 
-//    @OneToOne
-//    @JoinColumn(name = "student_id", referencedColumnName = "student_id")
-//    private StudentEntity studentId;  // ← 필드명은 유지!
-
-//    @OneToOne
-//    @JoinColumn(name = "student_id", referencedColumnName = "student_id", insertable = false, updatable = false)
-//    private StudentEntity student;
-//
-//    private Long studentId; // student_id 필드를 따로 유지
-
-    public static MemberEntity fromToken(String username, Long studentId, Role role) {
+    public static MemberEntity fromToken(Long studentId, Role role) {
         MemberEntity entity = new MemberEntity();
-        entity.username = username;
         entity.studentId = studentId;
         entity.password = "ZoqtmxhsEmrkwk0228!"; // 사용 안 하는 placeholder
         entity.role = role;

@@ -46,39 +46,70 @@ public class RefreshTokenService {
         }
     }
 
-
-    public MemberDto.TokenResponse refreshValid(HttpServletRequest request) {
-
-        //1. 쿠키에서 refresh 토큰 꺼내기
-        String refresh = getCookieValue(request.getCookies(), "refresh");
-        if (refresh == null) {
-            throw new CustomException(ErrorCode.TOKEN_NOTFOUND);
+    //헤더에서 access 토큰 꺼냄
+    public String extractAccessFromHeader(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return authHeader.substring(7); // "Bearer " 이후의 실제 토큰 값
         }
+        return "access토큰 못꺼냄";
+    }
+
+    //블랙리스트 등록
+    public void blacklist(String accessToken, Long expirationMillis) {
+        RedisConnection connection = redisConnectionFactory.getConnection();
+        try {
+            String key = "blacklist:" + accessToken;
+            connection.setEx(key.getBytes(), expirationMillis / 1000, "blacklisted".getBytes());
+        } finally {
+            connection.close();
+        }
+    }
+
+    //블랙리스트 검사
+    public boolean isBlacklisted(String accessToken){
+        RedisConnection connection = redisConnectionFactory.getConnection();
+        try {
+            String key = "blacklist:" + accessToken;
+            return connection.get(key.getBytes()) != null;
+        } finally {
+            connection.close();
+        }
+    }
+
+
+    public MemberDto.TokenResponse refreshValid(MemberDto.Refresh refresh) {
+
+//        //1. 쿠키에서 refresh 토큰 꺼내기
+//        String refresh = getCookieValue(request.getCookies(), "refresh");
+//        if (refresh == null) {
+//            throw new CustomException(ErrorCode.TOKEN_NOTFOUND);
+//        }
 
         //2. 만료 여부 체크
         try {
-            jwtUtil.isExpired(refresh);
+            jwtUtil.isExpired(refresh.getRefresh());
         } catch (ExpiredJwtException e) {
             throw new CustomException(ErrorCode.EXPIRED_TOKEN);
         }
 
-        //3. 카테고리 체크
-        String category = jwtUtil.getCategory(refresh);
-        if (!category.equals("refresh")){
-            throw new CustomException(ErrorCode.INVALID_TOKEN);
-        }
+//        //3. 카테고리 체크
+//        String category = jwtUtil.getCategory(refresh.getRefresh());
+//        if (!category.equals("refresh")){
+//            throw new CustomException(ErrorCode.INVALID_TOKEN);
+//        }
 
         //4. redis 토큰과 비교
-        Optional<RefreshToken> redisTokenOpt = refreshTokenRepository.findById(jwtUtil.getStudentId(refresh));
-        if (redisTokenOpt.isEmpty() || !redisTokenOpt.get().getRefreshToken().equals(refresh)){
+        Optional<RefreshToken> redisTokenOpt = refreshTokenRepository.findById(jwtUtil.getStudentId(refresh.getRefresh()));
+        if (redisTokenOpt.isEmpty() || !redisTokenOpt.get().getRefreshToken().equals(refresh.getRefresh())){
             throw new CustomException(ErrorCode.INVALID_TOKEN);
         }
 
-        String username = jwtUtil.getUsername(refresh);
-        Long studentId = jwtUtil.getStudentId(refresh);
-        String role = jwtUtil.getRole(refresh);
+//        String username = jwtUtil.getUsername(refresh);
+        Long studentId = jwtUtil.getStudentId(refresh.getRefresh());
+        String role = jwtUtil.getRole(refresh.getRefresh());
 
-        return new MemberDto.TokenResponse(username, studentId, role);
+        return new MemberDto.TokenResponse(studentId, role);
     }
 
     public ResponseEntity<?> reissue(HttpServletResponse response, MemberDto.TokenResponse tokenResponse) {
@@ -86,15 +117,15 @@ public class RefreshTokenService {
         refreshTokenRepository.deleteById(tokenResponse.getStudentId());
 
         // 6. 재발급
-        String newAccess = jwtUtil.createJwt("access", tokenResponse.getUsername(), tokenResponse.getStudentId(), tokenResponse.getRole(), 600000L);
-        String newRefresh = jwtUtil.createJwt("refresh", tokenResponse.getUsername(), tokenResponse.getStudentId(), tokenResponse.getRole(), 86400000L);
+        String newAccess = jwtUtil.createJwt("access", tokenResponse.getStudentId(), tokenResponse.getRole(), 600000L);
+        String newRefresh = jwtUtil.createJwt("refresh", tokenResponse.getStudentId(), tokenResponse.getRole(), 86400000L);
 
         // 7. Redis 저장 (rotate)
         refreshTokenRepository.save(new RefreshToken(tokenResponse.getStudentId(), newRefresh));
 
         // 8. 쿠키로 응답
-        response.addCookie(createAccessCookie("access", newAccess));
-        response.addCookie(createRefreshCookie("refresh", newRefresh));
+        response.addCookie(createCookie("access", newAccess));
+        response.addCookie(createCookie("refresh", newRefresh));
 
         return ResponseEntity.ok("토큰 재발급 완료");
     }
@@ -109,24 +140,24 @@ public class RefreshTokenService {
         return null;
     }
 
-    private Cookie createAccessCookie(String key, String value) {
+    public Cookie createCookie(String key, String value) {
+        key = key.equals("access") ? "access" : "refresh";
+        int expiry = key.equals("access") ? (60 * 10) : (60 * 60 * 24);
+
         Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(60 * 10);
+        cookie.setMaxAge(expiry);
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
         cookie.setPath("/");
         return cookie;
     }
 
-    private Cookie createRefreshCookie(String key, String value) {
-        Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(60 * 60 * 24);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        cookie.setPath("/");
-        return cookie;
+    //쿠키삭제 - AuthController logout에서 사용
+    public void deleteCookie(HttpServletResponse response, Cookie cookie) {
+        cookie.setMaxAge(0);  // 쿠키 만료 시간 0으로 설정 (삭제)
+        cookie.setPath("/");  // 경로를 루트로 설정
+        response.addCookie(cookie);
     }
-
 
     //LoginFilter에서 사용함
     public String getToken(Long studentId) {
@@ -153,8 +184,6 @@ public class RefreshTokenService {
         Long ttl = getTtl(studentId);
         return ttl != null && ttl > 300;    //5분이상 남았을때
     }
-
-
 }
 
 

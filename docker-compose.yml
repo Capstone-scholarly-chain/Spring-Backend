@@ -8,7 +8,7 @@ services:
     ports:
       - "3307:3306"
     volumes:
-      - mysql-data:/var/lib/mysql
+      - ./init:/docker-entrypoint-initdb.d
     networks:
       - backend
     healthcheck:
@@ -20,16 +20,30 @@ services:
   redis:
     image: redis
     container_name: redis
-    command: redis-server --requirepass Dkrlrhfo0992!
+    command: redis-server --requirepass 9999
     ports:
       - "6379:6379"
     networks:
       - backend
+# 빌드 버전
+#  spring-money:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    container_name: spring-money-container
+#    ports:
+#      - "8080:8080"
+#    depends_on:
+#      mysql:
+#        condition: service_healthy
+#      redis:
+#        condition: service_started
+#    networks:
+#      - backend
 
+# 도커 허브에 올릴때 image
   spring-money:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: agigora/money-spring-money:latest
     container_name: spring-money-container
     ports:
       - "8080:8080"

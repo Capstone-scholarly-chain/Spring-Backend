@@ -2,10 +2,8 @@ package Baeksa.money.global.jwt;
 
 
 import Baeksa.money.global.redis.RefreshTokenService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
@@ -15,7 +13,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import java.util.Map;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.io.IOException;
 
 
@@ -30,39 +30,50 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
 
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            Map<String, Object> credentials = objectMapper.readValue(request.getInputStream(), Map.class);
+            String authorizationHeader = request.getHeader("Authorization");
 
-            //클라이언트 요청에서 studentId, password 추출
-            //json의 키는 항상 String이기에 string으로 해줘야하는듯
-            Long studentId = Long.valueOf(credentials.get("studentId").toString());
-            String password = credentials.get("password").toString();
+            if (authorizationHeader == null || !authorizationHeader.startsWith("Basic ")) {
+                throw new RuntimeException("Authorization header is missing or incorrect.");
+            }
+
+            if (authorizationHeader.startsWith("Basic ")){
+                String base64Credentials = authorizationHeader.substring("Basic ".length());
+                String credentials = new String(Base64.getDecoder().decode(base64Credentials), StandardCharsets.UTF_8);
+                String[] values = credentials.split(":", 2);
+                String studentId = values[0];
+                String password = values[1];
+
 
             //스프링 시큐리티에서 username과 password를 검증하기 위해서는 token에 담아야 함
-            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(studentId.toString(), password, null);
+            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(studentId,
+                    password, null);
 
             //token에 담은 검증을 위한 AuthenticationManager로 전달
             return authenticationManager.authenticate(authToken);
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            } else {
+                throw new RuntimeException("Authorization header is missing or incorrect.");
+            }
+        } catch (Exception e) {
+            System.out.println("Authentication error: " + e.getMessage());
+            throw new RuntimeException("Failed to read authorization header", e);
         }
     }
 
     //로그인 성공시 실행하는 메소드 (여기서 JWT를 발급하면 됨)
     @Override
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) throws IOException, ServletException {
+    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response,
+                                            FilterChain chain, Authentication authentication) throws IOException, ServletException {
 
         //토큰 두개 - access, refresh
         //유저 정보
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        String username = authentication.getName();
+//        String username = authentication.getName();
         Long studentId = customUserDetails.getStudentId();
         String role = authentication.getAuthorities().iterator().next().getAuthority();
 
         // access token 항상 새로 발급 - 액세스 10분
-        String access = jwtUtil.createJwt("access", username, studentId, role, 600000L);
+        String access = jwtUtil.createJwt("access", studentId, role, 600000L);
 
         // 이미 발급되었으면 refresh 발급 안합니다
         String refresh;
@@ -70,41 +81,40 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             refresh = refreshTokenService.getToken(studentId);
         }
         else{
-            refresh = jwtUtil.createJwt("refresh", username, studentId, role, 86400000L);
-
-            // Redis에 저장!!!!!!!
-            refreshTokenService.save(studentId, refresh);
+            refresh = jwtUtil.createJwt("refresh", studentId, role, 86400000L);
+            refreshTokenService.save(studentId, refresh);   // Redis에 저장!!!!!!!
         }
 
         //헤더에 액세스 토큰, 쿠키에 리프레시, 설정되면 ok
-//        response.setHeader("access", access);
-        response.addCookie(createAccessCookie("access", access));
-        response.addCookie(createRefreshCookie("refresh", refresh));
+// Authorization 헤더에 access token 설정
+        response.addHeader("Authorization", "Bearer " + access);
+        response.addCookie(refreshTokenService.createCookie("access", access));
+        response.addCookie(refreshTokenService.createCookie("refresh", refresh));
+
+        //이건 void 오버라이드라 응답을 내가 만들어야함
+        //JSON응답 설정
+        //아니면 오브젝트매퍼로 만들어
         response.setStatus(HttpStatus.OK.value());
+        response.setContentType("application/json;charset=UTF-8");
+
+        String jsonResponse = String.format(
+                "{ \"status\": 200, \"message\": \"로그인 성공\", \"studentId\": %d, \"role\": \"%s\" }", studentId, role
+        );
+
+        response.getWriter().write(jsonResponse);
     }
 
     //로그인 실패시 실행하는 메소드
     @Override
-    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) {
+    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,
+                                              AuthenticationException failed) throws IOException {
 
-        response.setStatus(401);
-    }
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        response.setContentType("application/json;charset=UTF-8");
 
-    //쿠키
-    private Cookie createAccessCookie(String key, String value) {
-        Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(60 * 10); // access는 10분짜리라면 여기에 맞게도 가능
-        cookie.setHttpOnly(true);  // JS에서 접근 못하게
-        cookie.setSecure(true);    // HTTPS에서만 전송 (개발 중엔 생략 가능)
-        cookie.setPath("/");       // 모든 경로에 대해 전송
-        return cookie;
-    }
+        String jsonResponse = String.format(
+                "{ \"status\": 401, \"message\": \"로그인 실패\" }" );
 
-    private Cookie createRefreshCookie(String key, String value){
-        Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(24*60*60);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        return cookie;
+        response.getWriter().write(jsonResponse);
     }
 }

@@ -1,8 +1,8 @@
 package Baeksa.money.domain.enums;
 
 public enum Role {
-    STUDENT("ROLE_STUDENT"),
-    COMMITTEE("ROLE_COMMITTEE");
+    STUDENT("STUDENT"),
+    COMMITTEE("COMMITTEE");
 
     private final String key;
 

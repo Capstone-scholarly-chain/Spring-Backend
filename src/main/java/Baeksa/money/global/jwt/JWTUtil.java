@@ -19,15 +19,26 @@ public class JWTUtil {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
-    //get메소드들은 JWT를 디코딩하여 토큰에서 정보를 추출함
-    public String getUsername(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(secretKey)
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .get("username", String.class);
+    public String createJwt(String category, Long studentId, String role, Long expiredMs) {
+        return Jwts.builder()
+                .claim("category", category)
+                .claim("studentId", studentId)
+                .claim("role", role)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + expiredMs))
+                .signWith(secretKey)
+                .compact();
     }
+
+//    //get메소드들은 JWT를 디코딩하여 토큰에서 정보를 추출함
+//    public String getUsername(String token) {
+//        return Jwts.parserBuilder()
+//                .setSigningKey(secretKey)
+//                .build()
+//                .parseClaimsJws(token)
+//                .getBody()
+//                .get("username", String.class);
+//    }
 
     public Long getStudentId(String token) {
         return Jwts.parserBuilder()
@@ -48,7 +59,6 @@ public class JWTUtil {
     }
 
     public String getCategory(String token){
-
         return Jwts.parserBuilder()
                 .setSigningKey(secretKey)
                 .build()
@@ -67,15 +77,16 @@ public class JWTUtil {
                 .before(new Date());
     }
 
-    public String createJwt(String category, String username, Long studentId, String role, Long expiredMs) {
-        return Jwts.builder()
-                .claim("category", category)
-                .claim("username", username)
-                .claim("studentId", studentId)
-                .claim("role", role)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + expiredMs))
-                .signWith(secretKey)
-                .compact();
+    public Long getExpiration(String token){
+        if (token == null || token.trim().isEmpty()) {
+            throw new IllegalArgumentException("JWT token is null or empty");
+        }
+        return Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getExpiration()
+                .getTime() - System.currentTimeMillis();
     }
 }

@@ -2,6 +2,7 @@ package Baeksa.money.domain.Dto;
 
 import Baeksa.money.domain.enums.Role;
 import Baeksa.money.global.excepction.BaseErrorCode;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -67,16 +68,30 @@ public class MemberDto {
     }
 
     @Getter
+    @AllArgsConstructor
+    public static class ApiResponse<T> {
+        private int status;
+        private String code;
+        private String message;
+        private T data;
+    }
+
+    @Getter
+    @AllArgsConstructor
     public static class TokenResponse {
-        private final String username;
+//        private final String username;
         private final Long studentId;
         private final String role;
+    }
 
-        public TokenResponse(String username, Long studentId, String role) {
-            this.username = username;
-            this.studentId = studentId;
-            this.role = role;
-        }
+
+    @Getter
+    @NoArgsConstructor(force = true, access = AccessLevel.PRIVATE)
+    @AllArgsConstructor
+    public static class Refresh{
+
+        @JsonProperty("refresh")
+        private final String refresh;
     }
 
 }
