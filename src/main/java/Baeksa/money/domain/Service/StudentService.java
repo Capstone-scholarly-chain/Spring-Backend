@@ -30,16 +30,8 @@ public class StudentService {
             StudentEntity student = studentOptional.get();
 
             System.out.println("✅ [DB] studentId: " + student.getStudentId());
-            System.out.println("✅ [DB] username: " + student.getUsername());
-            System.out.println("✅ [DB] phone: " + student.getPhoneNumber());
-            System.out.println("✅ [DB] role: " + student.getRole());
 
-            System.out.println("✅ [입력값] studentId: " + studentId);
-            System.out.println("✅ [입력값] username: " + name);
-            System.out.println("✅ [입력값] phone: " + phoneNumber);
-            System.out.println("✅ [입력값] role: " + role);
-
-            return student.getStudentId().equals(studentId) && student.getUsername().equals(name) &&
+            return student.getStudentId().equals(studentId) && student.getName().equals(name) &&
                     student.getPhoneNumber().equals(phoneNumber) && student.getRole().equals(role);
         }
         System.out.println("❌ studentOptional.isPresent() == false");

@@ -18,7 +18,13 @@ public enum ErrorCode implements BaseErrorCode {
     TOKEN_NOTFOUND(HttpStatus.NOT_FOUND, "JWT_003", "refreshToken이 없습니다."),
     INVALID_ID(HttpStatus.BAD_REQUEST, "JWT_004", "학번이 잘못되었습니다."),
     BLACKLISTED(HttpStatus.BAD_REQUEST, "JWT_005", "blacklist처리된 access 토큰"),
-    INVALID_ACCESS(HttpStatus.BAD_REQUEST, "JWT_006", "accessToken이 유효하지 않습니다.");
+    INVALID_ACCESS(HttpStatus.BAD_REQUEST, "JWT_006", "accessToken이 유효하지 않습니다."),
+
+    // pubsub/request/approve
+    ALREADY_APPROVED(HttpStatus.UNAUTHORIZED, "PUBSUB_001", "이미 승인된 학생입니다."),
+    ALREADY_REJECTED(HttpStatus.UNAUTHORIZED, "PUBSUB_002", "이미 승인된 학생입니다."),
+    ALREADY_STATUS(HttpStatus.UNAUTHORIZED, "PUBSUB_003", "이미 등록된 학생입니다.");
+
 
 
     private final HttpStatus httpStatus;

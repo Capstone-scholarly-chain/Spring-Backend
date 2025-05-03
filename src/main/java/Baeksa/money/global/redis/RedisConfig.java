@@ -1,15 +1,20 @@
 package Baeksa.money.global.redis;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.listener.PatternTopic;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import javax.sound.midi.Receiver;
 
@@ -33,38 +38,42 @@ public class RedisConfig {
         return factory;
     }
 
-//    /// 추가
-//    // container 빈으로 등록
-//    @Bean
-//    RedisMessageListenerContainer container(RedisConnectionFactory connectionFactory,
-//                                            MessageListenerAdapter listenerAdapter) {
-//
-//        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
-//        // connection factory
-//        container.setConnectionFactory(connectionFactory);
-//        // listenerAdapter 를 이용해서 Listener 지정
-//        // subscribe 할 topic 지정
-//        container.addMessageListener(listenerAdapter, new PatternTopic("ChannelTopic 이름"));
-//
-//        return container;
-//    }
-//
-//    // MessageListenerAdapter 에서 receiver 설정
-//    @Bean
-//    MessageListenerAdapter listenerAdapter(Receiver receiver) {
-//        return new MessageListenerAdapter(receiver, "receiveMessage");
-//    }
-//
-//    // 처리하는 로직
-//    @Bean
-//    Receiver receiver() {
-//        return new Receiver();
-//    }
-//
-//    // redis template
-//    @Bean
-//    StringRedisTemplate template(RedisConnectionFactory connectionFactory) {
-//        return new StringRedisTemplate(connectionFactory);
-//    }
+    /// pub/sub 구현
+    @Bean
+    public RedisTemplate<String, Object> redisTemplate() {
+        RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
+        redisTemplate.setConnectionFactory(redisConnectionFactory());
+
+        // 정확한 ObjectMapper 구성
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+// GenericJackson2JsonRedisSerializer는 JavaTimeModule 내장
+        GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer(mapper);
+
+        // 키/값 직렬화 설정
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        redisTemplate.setValueSerializer(serializer);
+        redisTemplate.setHashKeySerializer(new StringRedisSerializer());
+        redisTemplate.setHashValueSerializer(serializer);
+
+        return redisTemplate;
+    }
+
+    @Bean
+    public RedisMessageListenerContainer redisMessageListener(){
+        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
+        container.setConnectionFactory(redisConnectionFactory());
+        return container;
+    }
+
+    @Bean
+    public ObjectMapper objectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS); // yyyy-MM-dd'T'HH:mm:ss 형태로 출력
+        return mapper;
+    }
 
 }

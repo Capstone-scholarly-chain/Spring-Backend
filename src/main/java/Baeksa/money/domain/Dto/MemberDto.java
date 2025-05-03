@@ -1,12 +1,17 @@
 package Baeksa.money.domain.Dto;
 
 import Baeksa.money.domain.enums.Role;
+import Baeksa.money.domain.enums.Status;
 import Baeksa.money.global.excepction.BaseErrorCode;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
+
+import java.security.Timestamp;
+import java.time.LocalDateTime;
+import java.util.List;
 
 
 @Getter
@@ -19,7 +24,6 @@ public class MemberDto {
     @NotBlank(message = "이름은 필수 입력 값입니다.")
     private String username;
 
-//    @NotBlank(message = "이메일은 필수 입력 값입니다.")
     @Email(message = "이메일 형식에 맞지 않습니다.")
     private String email;
 
@@ -35,7 +39,12 @@ public class MemberDto {
     private String confirmPassword;
 
     private Role role;
-
+    private LocalDateTime timestamp;
+    private LocalDateTime updateAt;
+    private Status status;
+    private List<Long> approvals;
+    private List<Long> rejections;
+    private Long id;
 
     @Getter
     @NoArgsConstructor
@@ -47,6 +56,9 @@ public class MemberDto {
         private String phoneNumber;
         private Long studentId;
         private Role role; // enum 등
+        private Status status;
+        private LocalDateTime timestamp;
+        private LocalDateTime updateAt;
     }
 
 
@@ -77,21 +89,13 @@ public class MemberDto {
     }
 
     @Getter
+    @NoArgsConstructor
     @AllArgsConstructor
-    public static class TokenResponse {
-//        private final String username;
-        private final Long studentId;
-        private final String role;
+    @Builder
+    public static class membershipDto {
+        private String username;
+        private Long studentId;
+        private Role role;
+        private LocalDateTime timestamp;
     }
-
-
-    @Getter
-    @NoArgsConstructor(force = true, access = AccessLevel.PRIVATE)
-    @AllArgsConstructor
-    public static class Refresh{
-
-        @JsonProperty("refresh")
-        private final String refresh;
-    }
-
 }

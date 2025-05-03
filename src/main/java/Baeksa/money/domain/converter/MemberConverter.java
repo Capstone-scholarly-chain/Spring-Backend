@@ -55,7 +55,10 @@ public class MemberConverter {
                 .phoneNumber(entity.getPhoneNumber())
                 .studentId(entity.getStudentId())
                 .role(entity.getRole())
+                .timestamp(entity.getTimestamp())
                 .build();
     }
+
+
 }
 

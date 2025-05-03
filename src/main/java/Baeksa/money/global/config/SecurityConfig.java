@@ -1,5 +1,6 @@
 package Baeksa.money.global.config;
 
+import Baeksa.money.global.jwt.JWTFilter;
 import Baeksa.money.global.jwt.JWTUtil;
 import Baeksa.money.global.jwt.CustomUserDetailsService;
 import Baeksa.money.global.jwt.LoginFilter;
@@ -62,17 +63,20 @@ public class SecurityConfig {
                 .authorizeHttpRequests((authorizeRequests) ->
                         authorizeRequests
                                 //아래 url은 인증 필요하지 않음
-                                .requestMatchers("/**",
+                                .requestMatchers(
                                         "/v3/api-docs/**",
                                         "/swagger-ui/**",
-                                        "/swagger-ui.html").permitAll()
-//                                .anyRequest().authenticated()
+                                        "/swagger-ui.html",
+                                        "/login",
+                                        "/signup").permitAll()
+                                .requestMatchers("/api/**").authenticated()
                 );
 
         http
-                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshTokenService),
-                        UsernamePasswordAuthenticationFilter.class);
-//                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
+                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration),
+                                jwtUtil, refreshTokenService),
+                        UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtFilter(jwtUtil, refreshTokenService), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -87,17 +91,9 @@ public class SecurityConfig {
         return configuration.getAuthenticationManager();
     }
 
-//    @Bean
-//    CorsConfigurationSource corsConfigurationSource() {
-//        CorsConfiguration configuration = new CorsConfiguration();
-//        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
-//        configuration.setAllowedMethods(Arrays.asList("*"));
-//        configuration.setAllowedHeaders(Arrays.asList("*"));
-//        configuration.setAllowCredentials(true);
-//
-//
-//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-//        source.registerCorsConfiguration("/**", configuration);
-//        return source;
-//    }
+    @Bean
+    public JWTFilter jwtFilter(JWTUtil jwtUtil, RefreshTokenService refreshTokenService) {
+        return new JWTFilter(jwtUtil, refreshTokenService);
+    }
+
 }

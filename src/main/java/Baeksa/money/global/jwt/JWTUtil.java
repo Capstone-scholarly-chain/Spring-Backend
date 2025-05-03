@@ -1,5 +1,7 @@
 package Baeksa.money.global.jwt;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -89,4 +91,17 @@ public class JWTUtil {
                 .getExpiration()
                 .getTime() - System.currentTimeMillis();
     }
+
+    public Claims validateJwt(String token) {
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(secretKey) // 생성할 때 쓴 것과 같은 키
+                    .build()
+                    .parseClaimsJws(token)    // 서명 + 만료 + 구조 검증 수행
+                    .getBody();               // → payload의 claims 리턴
+        } catch (JwtException e) {
+            throw new RuntimeException("Invalid token");
+        }
+    }
+
 }

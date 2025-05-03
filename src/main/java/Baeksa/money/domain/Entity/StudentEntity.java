@@ -19,8 +19,8 @@ public class StudentEntity {
     @Column(name = "student_id")
     private Long studentId;
 
-    @Column(unique = true, nullable = false)
-    private String username;
+    @Column(name = "name")
+    private String name;
 
     @Column(name = "identity_number")
     private String identityNumber;  //주민번호

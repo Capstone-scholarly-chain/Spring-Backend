@@ -5,7 +5,6 @@ import Baeksa.money.domain.enums.Role;
 import Baeksa.money.global.excepction.CustomException;
 import Baeksa.money.global.excepction.ErrorCode;
 import Baeksa.money.global.redis.RefreshTokenService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -37,8 +36,16 @@ public class JWTFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        String accessToken = refreshTokenService.getCookieValue(request.getCookies(), "access");
-//        String accessToken = refreshTokenService.extractAccessFromHeader(request);
+        String uri = request.getRequestURI();
+
+        // 로그인 요청은 필터 통과
+        if (uri.equals("/login") || uri.equals("/signup")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+//        String accessToken = refreshTokenService.getCookieValue(request.getCookies(), "access");
+        String accessToken = refreshTokenService.extractAccessFromHeader(request);
 
         //토큰이 없다면 다음 필터로 넘기지말고 에러 반환
         if (accessToken == null) {
@@ -84,5 +91,10 @@ public class JWTFilter extends OncePerRequestFilter {
         SecurityContextHolder.getContext().setAuthentication(authToken);
 
         filterChain.doFilter(request, response);
+
+        log.info("JWTFilter activated. accessToken: {}", accessToken);
+        log.info("studentId: {}", studentId);
+        log.info("authToken: {}", authToken);
+
     }
 }

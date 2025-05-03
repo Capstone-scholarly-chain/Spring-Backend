@@ -1,6 +1,5 @@
 package Baeksa.money.global.redis;
 
-import Baeksa.money.domain.Dto.MemberDto;
 import Baeksa.money.global.excepction.CustomException;
 import Baeksa.money.global.excepction.ErrorCode;
 import Baeksa.money.global.jwt.JWTUtil;
@@ -78,7 +77,7 @@ public class RefreshTokenService {
     }
 
 
-    public MemberDto.TokenResponse refreshValid(MemberDto.Refresh refresh) {
+    public RedisDto.TokenResponse refreshValid(RedisDto.Refresh refresh) {
 
 //        //1. 쿠키에서 refresh 토큰 꺼내기
 //        String refresh = getCookieValue(request.getCookies(), "refresh");
@@ -109,10 +108,10 @@ public class RefreshTokenService {
         Long studentId = jwtUtil.getStudentId(refresh.getRefresh());
         String role = jwtUtil.getRole(refresh.getRefresh());
 
-        return new MemberDto.TokenResponse(studentId, role);
+        return new RedisDto.TokenResponse(studentId, role);
     }
 
-    public ResponseEntity<?> reissue(HttpServletResponse response, MemberDto.TokenResponse tokenResponse) {
+    public ResponseEntity<?> reissue(HttpServletResponse response, RedisDto.TokenResponse tokenResponse) {
         // 5. 기존 refresh삭제
         refreshTokenRepository.deleteById(tokenResponse.getStudentId());
 
@@ -164,9 +163,7 @@ public class RefreshTokenService {
         RedisConnection connection = redisConnectionFactory.getConnection();
         String key = "token:" + studentId; // redis String을 쓰라고 하네요
         byte[] bytes = connection.hGet(key.getBytes(), "refreshToken".getBytes());  //byte타입만 있네요
-        if (bytes == null) {
-            return null;
-        }
+
         return new String(bytes);
     }
 
