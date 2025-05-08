@@ -4,7 +4,7 @@ import Baeksa.money.domain.Entity.MemberEntity;
 import Baeksa.money.domain.enums.Role;
 import Baeksa.money.global.excepction.CustomException;
 import Baeksa.money.global.excepction.ErrorCode;
-import Baeksa.money.global.redis.RefreshTokenService;
+import Baeksa.money.global.redis.service.RefreshTokenService;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -20,7 +20,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Map;
 
 // LoginFilter에서 로그인처리와 JWT를 발급하고
 // 이 JWTFilter는 OncePerRequestFilter를 구현중

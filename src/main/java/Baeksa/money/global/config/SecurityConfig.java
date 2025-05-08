@@ -2,14 +2,12 @@ package Baeksa.money.global.config;
 
 import Baeksa.money.global.jwt.JWTFilter;
 import Baeksa.money.global.jwt.JWTUtil;
-import Baeksa.money.global.jwt.CustomUserDetailsService;
 import Baeksa.money.global.jwt.LoginFilter;
-import Baeksa.money.global.redis.RefreshTokenService;
+import Baeksa.money.global.redis.service.RefreshTokenService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -18,13 +16,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.cors.CorsConfiguration;
-
-
-
-import java.util.Arrays;
 
 
 @Configuration
@@ -69,6 +60,9 @@ public class SecurityConfig {
                                         "/swagger-ui.html",
                                         "/login",
                                         "/signup").permitAll()
+                                .requestMatchers("/api/pubsub/student/**").hasAnyRole("STUDENT", "ADMIN")
+                                .requestMatchers("/api/pubsub/committee/**").hasAnyRole("COMMITTEE", "ADMIN")
+//                                .requestMatchers("/**").hasRole("ADMIN")
                                 .requestMatchers("/api/**").authenticated()
                 );
 

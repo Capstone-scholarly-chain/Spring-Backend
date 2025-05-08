@@ -10,8 +10,8 @@ import Baeksa.money.global.excepction.CustomException;
 import Baeksa.money.global.excepction.ErrorCode;
 import Baeksa.money.global.jwt.JWTUtil;
 import Baeksa.money.global.redis.RedisDto;
-import Baeksa.money.global.redis.RedisPublisher;
-import Baeksa.money.global.redis.RefreshTokenService;
+import Baeksa.money.global.redis.service.RedisPublisher;
+import Baeksa.money.global.redis.service.RefreshTokenService;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,14 +20,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 //회원가입 & 검증용 컨트롤러

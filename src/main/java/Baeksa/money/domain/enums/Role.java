@@ -1,17 +1,12 @@
 package Baeksa.money.domain.enums;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
+import java.util.Arrays;
+
 public enum Role {
-    STUDENT("STUDENT"),
-    COMMITTEE("COMMITTEE");
 
-    private final String key;
-
-    Role(String key) {
-        this.key = key;
-    }
-
-    public String getKey() {
-        return key;
-    }
+    ROLE_STUDENT, ROLE_COMMITTEE, ROLE_ADMIN;
 }
 

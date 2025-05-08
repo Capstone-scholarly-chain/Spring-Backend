@@ -1,5 +1,6 @@
 package Baeksa.money.domain.Dto;
 
+import Baeksa.money.domain.enums.EntryType;
 import Baeksa.money.domain.enums.Role;
 import Baeksa.money.domain.enums.Status;
 import Baeksa.money.global.excepction.BaseErrorCode;
@@ -46,6 +47,9 @@ public class MemberDto {
     private List<Long> rejections;
     private Long id;
 
+
+
+
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
@@ -88,14 +92,4 @@ public class MemberDto {
         private T data;
     }
 
-    @Getter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public static class membershipDto {
-        private String username;
-        private Long studentId;
-        private Role role;
-        private LocalDateTime timestamp;
-    }
 }

@@ -1,7 +1,6 @@
-package Baeksa.money.global.redis;
+package Baeksa.money.global.redis.service;
 
 
-import Baeksa.money.domain.Dto.MemberDto;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -17,8 +16,4 @@ public class RedisPublisher {
     public void publish(String channel, Object message) {
         redisTemplate.convertAndSend(channel, message);
     }
-
-//    public void publish(String channel, MemberDto.MemberResponseDto dto) {
-//        redisTemplate.convertAndSend(channel, dto);
-//    }
 }

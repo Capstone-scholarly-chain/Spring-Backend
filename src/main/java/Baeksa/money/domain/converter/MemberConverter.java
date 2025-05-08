@@ -36,17 +36,6 @@ public class MemberConverter {
     }
 
     // Entity -> DTO (조회용)
-    public MemberDto toDto(MemberEntity entity) {
-        return MemberDto.builder()
-                .username(entity.getUsername())
-                .email(entity.getEmail())
-                .phoneNumber(entity.getPhoneNumber())
-                .studentId(entity.getStudentId())
-                .password(null)  // 보안상 패스워드는 숨김 처리
-                .role(entity.getRole())
-                .build();
-    }
-
     //응답 확인용 dto
     public MemberDto.MemberResponseDto toResponseDto(MemberEntity entity) {
         return MemberDto.MemberResponseDto.builder()
@@ -55,10 +44,10 @@ public class MemberConverter {
                 .phoneNumber(entity.getPhoneNumber())
                 .studentId(entity.getStudentId())
                 .role(entity.getRole())
+                .status(entity.getStatus())
                 .timestamp(entity.getTimestamp())
                 .build();
     }
-
 
 }
 

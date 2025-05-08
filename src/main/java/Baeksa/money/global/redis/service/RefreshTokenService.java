@@ -1,8 +1,11 @@
-package Baeksa.money.global.redis;
+package Baeksa.money.global.redis.service;
 
 import Baeksa.money.global.excepction.CustomException;
 import Baeksa.money.global.excepction.ErrorCode;
 import Baeksa.money.global.jwt.JWTUtil;
+import Baeksa.money.global.redis.RedisDto;
+import Baeksa.money.global.redis.RefreshToken;
+import Baeksa.money.global.redis.RefreshTokenRepository;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,8 +28,8 @@ public class RefreshTokenService {
     private final RedisConnectionFactory redisConnectionFactory;
 
     @Transactional
-    public void save(Long studentId, String token) {
-        refreshTokenRepository.save(new RefreshToken(studentId, token));
+    public void save(Long studentId, String refreshToken) {
+        refreshTokenRepository.save(new RefreshToken(studentId, refreshToken));
     }
 
     @Transactional

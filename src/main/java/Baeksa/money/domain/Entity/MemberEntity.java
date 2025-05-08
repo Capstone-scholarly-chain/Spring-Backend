@@ -52,6 +52,7 @@ public class MemberEntity {
     @Column(name = "update_at")
     private LocalDateTime updateAt;
 
+
     public static MemberEntity fromToken(Long studentId, Role role) {
         MemberEntity entity = new MemberEntity();
         entity.studentId = studentId;

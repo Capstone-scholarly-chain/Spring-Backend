@@ -1,7 +1,8 @@
 package Baeksa.money.global.jwt;
 
 
-import Baeksa.money.global.redis.RefreshTokenService;
+import Baeksa.money.domain.enums.Role;
+import Baeksa.money.global.redis.service.RefreshTokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -72,8 +73,13 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         Long studentId = customUserDetails.getStudentId();
         String role = authentication.getAuthorities().iterator().next().getAuthority();
 
+        String access;
         // access token 항상 새로 발급 - 액세스 10분
-        String access = jwtUtil.createJwt("access", studentId, role, 600000L);
+        if (role.equals(Role.ROLE_ADMIN.name())){   //.name()은 enum을 문자열로 해줌
+            access = jwtUtil.createJwt("access", studentId, role, 21600000L);    //6시간
+        }else {
+            access = jwtUtil.createJwt("access", studentId, role, 600000L); // 10분 = 10 * 60 * 1000
+        }
 
         // 이미 발급되었으면 refresh 발급 안합니다
         String refresh;

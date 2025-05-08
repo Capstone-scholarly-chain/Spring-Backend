@@ -2,6 +2,7 @@ package Baeksa.money.global.jwt;
 
 import Baeksa.money.domain.Entity.MemberEntity;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
@@ -18,7 +19,7 @@ public class CustomUserDetails implements UserDetails {
     // 권한 설정
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(() -> memberEntity.getRole().getKey());
+        return List.of(new SimpleGrantedAuthority(memberEntity.getRole().name()));
     }
 
     @Override
