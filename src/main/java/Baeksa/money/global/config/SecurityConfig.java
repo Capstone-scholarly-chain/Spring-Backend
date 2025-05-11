@@ -4,6 +4,7 @@ import Baeksa.money.global.jwt.JWTFilter;
 import Baeksa.money.global.jwt.JWTUtil;
 import Baeksa.money.global.jwt.LoginFilter;
 import Baeksa.money.global.redis.service.RefreshTokenService;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,6 +17,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import java.util.logging.Filter;
 
 
 @Configuration
@@ -31,6 +34,15 @@ public class SecurityConfig {
         this.jwtUtil = jwtUtil;
         this.refreshTokenService = refreshTokenService;
     }
+
+    private String[] allowUrl = {
+            "/login",
+            "/signup",
+            "/v3/api-docs/**",
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            "/api/pubsub/ledger/**"
+    };
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -54,22 +66,16 @@ public class SecurityConfig {
                 .authorizeHttpRequests((authorizeRequests) ->
                         authorizeRequests
                                 //아래 url은 인증 필요하지 않음
-                                .requestMatchers(
-                                        "/v3/api-docs/**",
-                                        "/swagger-ui/**",
-                                        "/swagger-ui.html",
-                                        "/login",
-                                        "/signup").permitAll()
-                                .requestMatchers("/api/pubsub/student/**").hasAnyRole("STUDENT", "ADMIN")
-                                .requestMatchers("/api/pubsub/committee/**").hasAnyRole("COMMITTEE", "ADMIN")
-//                                .requestMatchers("/**").hasRole("ADMIN")
-                                .requestMatchers("/api/**").authenticated()
+                                .requestMatchers(allowUrl).permitAll()
+                                .anyRequest().authenticated()
+//                                .requestMatchers("/api/pubsub/student/**").hasAnyRole("STUDENT", "ADMIN")
+//                                .requestMatchers("/api/pubsub/committee/**").hasAnyRole("COMMITTEE", "ADMIN")
+//                                .requestMatchers("/api/**").authenticated()
                 );
 
         http
                 .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration),
-                                jwtUtil, refreshTokenService),
-                        UsernamePasswordAuthenticationFilter.class)
+                                jwtUtil, refreshTokenService), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtFilter(jwtUtil, refreshTokenService), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

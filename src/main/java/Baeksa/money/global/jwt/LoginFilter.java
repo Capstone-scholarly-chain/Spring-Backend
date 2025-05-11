@@ -1,13 +1,14 @@
 package Baeksa.money.global.jwt;
 
 
-import Baeksa.money.domain.enums.Role;
+import Baeksa.money.domain.auth.enums.Role;
 import Baeksa.money.global.redis.service.RefreshTokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,7 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.io.IOException;
 
-
+@Slf4j
 @AllArgsConstructor
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
@@ -36,18 +37,24 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             if (authorizationHeader == null || !authorizationHeader.startsWith("Basic ")) {
                 throw new RuntimeException("Authorization header is missing or incorrect.");
             }
-
+            log.info("header:" , authorizationHeader);
             if (authorizationHeader.startsWith("Basic ")){
                 String base64Credentials = authorizationHeader.substring("Basic ".length());
                 String credentials = new String(Base64.getDecoder().decode(base64Credentials), StandardCharsets.UTF_8);
                 String[] values = credentials.split(":", 2);
                 String studentId = values[0];
                 String password = values[1];
-
+                log.info("values 로그"+values);
+                log.info("student && password 로그"+ studentId);
+                log.info("password 로그"+ password);
 
             //스프링 시큐리티에서 username과 password를 검증하기 위해서는 token에 담아야 함
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(studentId,
                     password, null);
+
+                log.info("authToken 로그"+ authToken);
+
+                log.info("3");
 
             //token에 담은 검증을 위한 AuthenticationManager로 전달
             return authenticationManager.authenticate(authToken);
@@ -70,32 +77,32 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
 
 //        String username = authentication.getName();
-        Long studentId = customUserDetails.getStudentId();
+        String studentId = customUserDetails.getStudentId();
         String role = authentication.getAuthorities().iterator().next().getAuthority();
 
-        String access;
+        String access_token;
         // access token 항상 새로 발급 - 액세스 10분
         if (role.equals(Role.ROLE_ADMIN.name())){   //.name()은 enum을 문자열로 해줌
-            access = jwtUtil.createJwt("access", studentId, role, 21600000L);    //6시간
+            access_token = jwtUtil.createJwt("access", studentId, role, 21600000L);    //6시간
         }else {
-            access = jwtUtil.createJwt("access", studentId, role, 600000L); // 10분 = 10 * 60 * 1000
+            access_token = jwtUtil.createJwt("access", studentId, role, 600000L); // 10분 = 10 * 60 * 1000
         }
 
         // 이미 발급되었으면 refresh 발급 안합니다
-        String refresh;
+        String refresh_token;
         if (refreshTokenService.existsRefresh(studentId)){
-            refresh = refreshTokenService.getToken(studentId);
+            refresh_token = refreshTokenService.getToken(studentId);
         }
         else{
-            refresh = jwtUtil.createJwt("refresh", studentId, role, 86400000L);
-            refreshTokenService.save(studentId, refresh);   // Redis에 저장!!!!!!!
+            refresh_token = jwtUtil.createJwt("refresh", studentId, role, 86400000L);
+            refreshTokenService.save(studentId, refresh_token);   // Redis에 저장!!!!!!!
         }
 
         //헤더에 액세스 토큰, 쿠키에 리프레시, 설정되면 ok
 // Authorization 헤더에 access token 설정
-        response.addHeader("Authorization", "Bearer " + access);
-        response.addCookie(refreshTokenService.createCookie("access", access));
-        response.addCookie(refreshTokenService.createCookie("refresh", refresh));
+        response.addHeader("Authorization", "Bearer " + access_token);
+        response.addCookie(refreshTokenService.createCookie("access_token", access_token));
+        response.addCookie(refreshTokenService.createCookie("refresh_token", refresh_token));
 
         //이건 void 오버라이드라 응답을 내가 만들어야함
         //JSON응답 설정
@@ -104,7 +111,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         response.setContentType("application/json;charset=UTF-8");
 
         String jsonResponse = String.format(
-                "{ \"status\": 200, \"message\": \"로그인 성공\", \"studentId\": %d, \"role\": \"%s\" }", studentId, role
+                "{ \"status\": 200, \"message\": \"로그인 성공\", \"studentId\": %s, \"role\": \"%s\" }", studentId, role
         );
 
         response.getWriter().write(jsonResponse);

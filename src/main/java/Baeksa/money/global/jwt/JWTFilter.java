@@ -1,9 +1,9 @@
 package Baeksa.money.global.jwt;
 
-import Baeksa.money.domain.Entity.MemberEntity;
-import Baeksa.money.domain.enums.Role;
+import Baeksa.money.domain.auth.Entity.MemberEntity;
+import Baeksa.money.domain.auth.enums.Role;
 import Baeksa.money.global.excepction.CustomException;
-import Baeksa.money.global.excepction.ErrorCode;
+import Baeksa.money.global.excepction.code.ErrorCode;
 import Baeksa.money.global.redis.service.RefreshTokenService;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
@@ -35,14 +35,20 @@ public class JWTFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        String uri = request.getRequestURI();
+        String requestURI = request.getRequestURI();
 
-        // 로그인 요청은 필터 통과
-        if (uri.equals("/login") || uri.equals("/signup")) {
+        log.info("1:"+requestURI);
+
+        if (requestURI.startsWith("/swagger-ui") ||
+                requestURI.startsWith("/v3/api-docs") ||
+                requestURI.equals("/swagger-ui.html") ||
+                requestURI.equals("/login") ||
+                requestURI.equals("/signup")) {
             filterChain.doFilter(request, response);
             return;
         }
 
+        log.info("2");
 //        String accessToken = refreshTokenService.getCookieValue(request.getCookies(), "access");
         String accessToken = refreshTokenService.extractAccessFromHeader(request);
 
@@ -75,10 +81,12 @@ public class JWTFilter extends OncePerRequestFilter {
 
         //블랙리스트에 있는 access인지 검사
         if (refreshTokenService.isBlacklisted(accessToken)){
-            throw new CustomException(ErrorCode.BLACKLISTED);
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.getWriter().write("{\"error\": \"Blacklisted access token\"}");
+            return;
         }
 
-        Long studentId = jwtUtil.getStudentId(accessToken);
+        String studentId = jwtUtil.getStudentId(accessToken);
         String role = jwtUtil.getRole(accessToken);
 
         MemberEntity member = MemberEntity.fromToken(studentId, Role.valueOf(role));
@@ -94,6 +102,9 @@ public class JWTFilter extends OncePerRequestFilter {
         log.info("JWTFilter activated. accessToken: {}", accessToken);
         log.info("studentId: {}", studentId);
         log.info("authToken: {}", authToken);
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println("✅ 최종 인증 객체: " + auth);
 
     }
 }

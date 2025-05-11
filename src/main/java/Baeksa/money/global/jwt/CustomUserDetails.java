@@ -1,6 +1,6 @@
 package Baeksa.money.global.jwt;
 
-import Baeksa.money.domain.Entity.MemberEntity;
+import Baeksa.money.domain.auth.Entity.MemberEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -29,10 +29,13 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        return memberEntity.getStudentId().toString();
+        return memberEntity.getStudentId();
     }
+//    public String getUsername() {
+//        return memberEntity.getStudentId().toString();
+//    }
 
-    public Long getStudentId() {
+    public String getStudentId() {
         return memberEntity.getStudentId();
     }
 

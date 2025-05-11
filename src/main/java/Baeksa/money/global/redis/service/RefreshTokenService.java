@@ -1,7 +1,7 @@
 package Baeksa.money.global.redis.service;
 
 import Baeksa.money.global.excepction.CustomException;
-import Baeksa.money.global.excepction.ErrorCode;
+import Baeksa.money.global.excepction.code.ErrorCode;
 import Baeksa.money.global.jwt.JWTUtil;
 import Baeksa.money.global.redis.RedisDto;
 import Baeksa.money.global.redis.RefreshToken;
@@ -28,17 +28,17 @@ public class RefreshTokenService {
     private final RedisConnectionFactory redisConnectionFactory;
 
     @Transactional
-    public void save(Long studentId, String refreshToken) {
+    public void save(String studentId, String refreshToken) {
         refreshTokenRepository.save(new RefreshToken(studentId, refreshToken));
     }
 
     @Transactional
-    public Optional<RefreshToken> find(Long studentId) {
+    public Optional<RefreshToken> find(String studentId) {
         return refreshTokenRepository.findById(studentId);
     }
 
     @Transactional
-    public void logout(Long studentId) {
+    public void logout(String studentId) {
         if (studentId != null) {
             // ID가 null이 아닌 경우에만 삭제 작업을 진행
             refreshTokenRepository.deleteById(studentId);
@@ -90,7 +90,7 @@ public class RefreshTokenService {
 
         //2. 만료 여부 체크
         try {
-            jwtUtil.isExpired(refresh.getRefresh());
+            jwtUtil.isExpired(refresh.getRefresh_token());
         } catch (ExpiredJwtException e) {
             throw new CustomException(ErrorCode.EXPIRED_TOKEN);
         }
@@ -102,14 +102,14 @@ public class RefreshTokenService {
 //        }
 
         //4. redis 토큰과 비교
-        Optional<RefreshToken> redisTokenOpt = refreshTokenRepository.findById(jwtUtil.getStudentId(refresh.getRefresh()));
-        if (redisTokenOpt.isEmpty() || !redisTokenOpt.get().getRefreshToken().equals(refresh.getRefresh())){
+        Optional<RefreshToken> redisTokenOpt = refreshTokenRepository.findById(jwtUtil.getStudentId(refresh.getRefresh_token()));
+        if (redisTokenOpt.isEmpty() || !redisTokenOpt.get().getRefreshToken().equals(refresh.getRefresh_token())){
             throw new CustomException(ErrorCode.INVALID_TOKEN);
         }
 
 //        String username = jwtUtil.getUsername(refresh);
-        Long studentId = jwtUtil.getStudentId(refresh.getRefresh());
-        String role = jwtUtil.getRole(refresh.getRefresh());
+        String studentId = jwtUtil.getStudentId(refresh.getRefresh_token());
+        String role = jwtUtil.getRole(refresh.getRefresh_token());
 
         return new RedisDto.TokenResponse(studentId, role);
     }
@@ -119,15 +119,15 @@ public class RefreshTokenService {
         refreshTokenRepository.deleteById(tokenResponse.getStudentId());
 
         // 6. 재발급
-        String newAccess = jwtUtil.createJwt("access", tokenResponse.getStudentId(), tokenResponse.getRole(), 600000L);
-        String newRefresh = jwtUtil.createJwt("refresh", tokenResponse.getStudentId(), tokenResponse.getRole(), 86400000L);
+        String newAccess = jwtUtil.createJwt("access_token", tokenResponse.getStudentId(), tokenResponse.getRole(), 600000L);
+        String newRefresh = jwtUtil.createJwt("refresh_token", tokenResponse.getStudentId(), tokenResponse.getRole(), 86400000L);
 
         // 7. Redis 저장 (rotate)
         refreshTokenRepository.save(new RefreshToken(tokenResponse.getStudentId(), newRefresh));
 
         // 8. 쿠키로 응답
-        response.addCookie(createCookie("access", newAccess));
-        response.addCookie(createCookie("refresh", newRefresh));
+        response.addCookie(createCookie("access_token", newAccess));
+        response.addCookie(createCookie("refresh_token", newRefresh));
 
         return ResponseEntity.ok("토큰 재발급 완료");
     }
@@ -143,8 +143,8 @@ public class RefreshTokenService {
     }
 
     public Cookie createCookie(String key, String value) {
-        key = key.equals("access") ? "access" : "refresh";
-        int expiry = key.equals("access") ? (60 * 10) : (60 * 60 * 24);
+        key = key.equals("access_token") ? "access_token" : "refresh_token";
+        int expiry = key.equals("access_token") ? (60 * 10) : (60 * 60 * 24);
 
         Cookie cookie = new Cookie(key, value);
         cookie.setMaxAge(expiry);
@@ -162,7 +162,7 @@ public class RefreshTokenService {
     }
 
     //LoginFilter에서 사용함
-    public String getToken(Long studentId) {
+    public String getToken(String studentId) {
         RedisConnection connection = redisConnectionFactory.getConnection();
         String key = "token:" + studentId; // redis String을 쓰라고 하네요
         byte[] bytes = connection.hGet(key.getBytes(), "refreshToken".getBytes());  //byte타입만 있네요
@@ -170,13 +170,13 @@ public class RefreshTokenService {
         return new String(bytes);
     }
 
-    public Long getTtl(Long studentId) {
+    public Long getTtl(String studentId) {
         RedisConnection connection = redisConnectionFactory.getConnection();
         String key = "token:" + studentId; // redis String을 쓰라고 하네요
         return connection.ttl(key.getBytes()); // 초 단위 TTL 반환
     }
 
-    public boolean existsRefresh(Long studentId) {
+    public boolean existsRefresh(String studentId) {
         Optional<RefreshToken> tokenOptional = refreshTokenRepository.findById(studentId);
         if (tokenOptional.isEmpty()) {
             return false;

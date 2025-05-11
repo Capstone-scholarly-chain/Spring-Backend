@@ -21,7 +21,7 @@ public class JWTUtil {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String createJwt(String category, Long studentId, String role, Long expiredMs) {
+    public String createJwt(String category, String studentId, String role, Long expiredMs) {
         return Jwts.builder()
                 .claim("category", category)
                 .claim("studentId", studentId)
@@ -42,13 +42,13 @@ public class JWTUtil {
 //                .get("username", String.class);
 //    }
 
-    public Long getStudentId(String token) {
+    public String getStudentId(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(secretKey)
                 .build()
                 .parseClaimsJws(token)
                 .getBody()
-                .get("studentId", Long.class);
+                .get("studentId", String.class);
     }
 
     public String getRole(String token) {

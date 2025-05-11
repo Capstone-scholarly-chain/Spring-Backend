@@ -1,6 +1,6 @@
 package Baeksa.money.global.excepction;
 
-import org.springframework.http.HttpStatus;
+import Baeksa.money.global.excepction.code.BaseErrorCode;
 
 public class CustomException extends RuntimeException {
 
