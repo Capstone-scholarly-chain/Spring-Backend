@@ -11,6 +11,8 @@ public enum ErrorCode implements BaseErrorCode {
     DUPICATED_MEMBER(HttpStatus.BAD_REQUEST, "MEMBER_001", "이미 가입된 학생입니다."),
     STUDENT_NOTFOUND(HttpStatus.NOT_FOUND, "MEMBER_002", "해당 학생 정보를 찾을 수 없습니다."),
     PASSWORD_NOT_MATCH(HttpStatus.BAD_REQUEST, "MEMBER_003", "비밀번호가 일치하지 않습니다."),
+    INVALID_AUTH_HEADER(HttpStatus.UNAUTHORIZED, "MEMBER_004", "인증 헤더가 필요합니다."),
+    INVALID_AUTH_HEADER2(HttpStatus.UNAUTHORIZED, "MEMBER_005", "잘못된 인증 형식입니다."),
 
     /// jwt
     EXPIRED_TOKEN(HttpStatus.BAD_REQUEST, "JWT_001", "refreshToken이 만료되었습니다."),

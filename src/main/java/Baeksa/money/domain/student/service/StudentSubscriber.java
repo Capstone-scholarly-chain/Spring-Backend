@@ -5,6 +5,7 @@ import Baeksa.money.global.excepction.CustomException;
 import Baeksa.money.global.excepction.code.ErrorCode;
 import Baeksa.money.global.redis.RedisDto;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -45,21 +46,31 @@ public class StudentSubscriber implements MessageListener {
 
         try {
 //            String publishMessage = redisTemplate.getStringSerializer().deserialize(message.getBody());
-            //이건 onMessage의 파라미터 message야
+            //이건 onMessage의 파라미터 message야, pattern으로 채널 뽑을 수 있음
             String publishMessage = new String(message.getBody(), StandardCharsets.UTF_8);
-            RedisDto.MessageDto redisDto = objectMapper.readValue(publishMessage, RedisDto.MessageDto.class);
+            String channel = new String(pattern, StandardCharsets.UTF_8);
 
-            String channel = redisDto.getChannel();
-            Map<String, Object> messages = redisDto.getMessage();
+            log.info("Redis 메시지 수신 - 채널: {}, 메시지: {}", channel, publishMessage);
 
-            log.info("Redis Subscribe Channel : {}", channel);
-            log.info("Redis SUB Message : {}", publishMessage);
+            // JSON 메시지를 Map으로 변환
+            Map<String, Object> messageMap = objectMapper.readValue(publishMessage,
+                    new TypeReference<Map<String, Object>>() {});
 
             // 채널별 처리 핸들러 실행
             Consumer<Map<String, Object>> handler = handlerMap.get(channel);
             if (handler != null) {
-                handler.accept(messages);
+                handler.accept(messageMap);
             } else {
+//                // eventType을 통한 대체 채널 식별 시도
+//                String eventType = (String) messageMap.get("eventType");
+//                if (eventType != null) {
+//                    log.info("채널 대신 eventType으로 핸들러 식별 시도: {}", eventType);
+//                    handler = getHandlerByEventType(eventType);
+//                    if (handler != null) {
+//                        handler.accept(messageMap);
+//                        return;
+//                    }
+//                }
                 throw new CustomException(ErrorCode.NO_CHANNEL);
             }
         } catch (JsonProcessingException e) {
@@ -68,12 +79,18 @@ public class StudentSubscriber implements MessageListener {
             log.error("Redis 메시지 처리 실패: {}", e.getMessage(), e);
         }
     }
-
-//    private List<String> handleRegisterUser(Map<String, Object> msg) {
-//        List<String> students = studentPubSubService.getStudents();
-//        log.info("학생 가입 요청");
-//        return students;
+//    // eventType을 기반으로 핸들러 반환
+//    private Consumer<Map<String, Object>> getHandlerByEventType(String eventType) {
+//        switch (eventType) {
+//            case "TEST_PUBLISHER_REQUEST":
+//                return this::handleTest;
+//            // 다른 이벤트 타입에 대한 핸들러 매핑 추가
+//            default:
+//                return null;
+//        }
 //    }
+
+
     private void handleRegisterUser(Map<String, Object> msg) {
         log.info("학생 가입 요청 응답 수신: {}", msg);
         // 이벤트 발행하여 필요한 서비스에서 처리하도록 함

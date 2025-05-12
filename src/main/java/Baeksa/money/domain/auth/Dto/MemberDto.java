@@ -61,5 +61,21 @@ public class MemberDto {
         private LocalDateTime updateAt;
     }
 
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public class LoginRequest {
+        private String studentId;
+        private String password;
+    }
 
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class LoginResponse {
+        private String studentId;
+        private String username;
+        private Role role;
+    }
 }

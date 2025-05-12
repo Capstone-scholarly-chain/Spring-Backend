@@ -3,6 +3,7 @@ package Baeksa.money.domain.auth.Controller;
 
 import Baeksa.money.domain.auth.Dto.MemberDto;
 import Baeksa.money.domain.auth.Entity.MemberEntity;
+import Baeksa.money.domain.auth.Service.AuthService;
 import Baeksa.money.domain.auth.Service.MemberService;
 import Baeksa.money.domain.auth.Service.StudentService;
 import Baeksa.money.domain.auth.converter.MemberConverter;
@@ -12,6 +13,7 @@ import Baeksa.money.global.excepction.code.BaseApiResponse;
 import Baeksa.money.global.excepction.CustomException;
 import Baeksa.money.global.excepction.code.ErrorCode;
 import Baeksa.money.global.excepction.code.ErrorResponse;
+import Baeksa.money.global.jwt.CustomUserDetails;
 import Baeksa.money.global.jwt.JWTUtil;
 import Baeksa.money.global.redis.RedisDto;
 import Baeksa.money.domain.committee.service.CommitteePublisher;
@@ -33,6 +35,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -53,6 +57,7 @@ public class AuthController {
     private final RefreshTokenService refreshTokenService;
     private final JWTUtil jwtUtil;
     private final CommitteePublisher committeePublisher;
+    private final AuthService authService;
 
 
     @Operation(summary = "회원가입 API")
@@ -81,6 +86,8 @@ public class AuthController {
 
             //savedEntity를 MemberDto로 변환하여 반환해야됨(컨트롤러니깐)
             MemberDto.MemberResponseDto savedDto = memberConverter.toResponseDto(savedEntity);
+            log.info("savedDto: {}", savedDto.getStudentId());
+            log.info("memberDto: {}", memberDto.getStudentId());
 
             Map<String, Object> sendDto = new HashMap<>();
             sendDto.put("userId", memberDto.getStudentId());
@@ -101,6 +108,16 @@ public class AuthController {
             e.printStackTrace();
             throw new CustomException(ErrorCode.INTERNAL_SERVER);
         }
+    }
+
+    ///
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestHeader("Authorization") String header, HttpServletResponse response) {
+        MemberDto.LoginResponse loginResponse = authService.login(header, response);
+
+        return ResponseEntity.ok(
+                new BaseApiResponse<>(200, "LOGIN", "로그인", loginResponse)
+        );
     }
 
     //requestId, userId, name, orgType받기
@@ -134,7 +151,9 @@ public class AuthController {
         try {
             // 헤더에서 access 꺼내기
 //        String accessToken = refreshTokenService.extractAccessFromHeader(request);
-            String accessToken = refreshTokenService.getCookieValue(request.getCookies(), "access");
+            String accessToken = refreshTokenService.getCookieValue(request.getCookies(), "access_token");
+            log.info("access: {}", accessToken);
+
 
             if (accessToken == null || accessToken.trim().isEmpty()) {
                 throw new CustomException(ErrorCode.INVALID_ACCESS); // 적절한 에러코드로 대체
@@ -147,21 +166,23 @@ public class AuthController {
             /// 아니면 이제 access 블랙리스트 처리해
             refreshTokenService.blacklist(accessToken, jwtUtil.getExpiration(accessToken));
 
+
             //로그아웃 전에 refresh 검증할 필요가 있을까? -> 만료 여부만 체크
-            String refresh = refreshTokenService.getCookieValue(request.getCookies(), "refresh");
+            String refresh = refreshTokenService.getCookieValue(request.getCookies(), "refresh_token");
             try {
                 jwtUtil.isExpired(refresh);
             } catch (ExpiredJwtException e) {
                 throw new CustomException(ErrorCode.EXPIRED_TOKEN);
             }
+            log.info("refresh: {}", refresh);
 
             //해당 refresh토큰 삭제
             String studentId = jwtUtil.getStudentId(accessToken);
             refreshTokenService.logout(studentId);
 
             //쿠키 삭제
-            refreshTokenService.deleteCookie(response, new Cookie("access", null));
-            refreshTokenService.deleteCookie(response, new Cookie("refresh", null));
+            refreshTokenService.deleteCookie(response, new Cookie("access_token", null));
+            refreshTokenService.deleteCookie(response, new Cookie("refresh_token", null));
 
             return ResponseEntity.ok(new BaseApiResponse<>(200, "LOGOUT", "로그아웃 성공", null));
         }

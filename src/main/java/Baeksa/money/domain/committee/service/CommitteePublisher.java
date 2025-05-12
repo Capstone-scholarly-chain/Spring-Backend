@@ -26,7 +26,6 @@ public class CommitteePublisher {
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final MemberService memberService;
-    private final RedisService redisService;
     private final ApplicationEventPublisher eventPublisher;
 
     public void publish(String channel, Object message) {
@@ -85,7 +84,7 @@ public class CommitteePublisher {
     public Map<String, Object> applyWithdraw(String councilId, CommitteeDto.LedgerDto ledgerDto) {
 
         MemberEntity member = memberService.findById(councilId);
-        redisService.ValidStatus(member, member.getStatus());
+        ValidStatus(member, member.getStatus());
 
         Map<String, Object> map = new HashMap<>();
         try {
@@ -137,6 +136,12 @@ public class CommitteePublisher {
             return map;
         } catch (Exception e) {
             throw new CustomException(ErrorCode.COMMITTEE_REJECT_DEPOSIT);
+        }
+    }
+
+    public void ValidStatus(MemberEntity entity, Status status){
+        if(entity.getStatus() != Status.APPROVE){
+            throw new CustomException(ErrorCode.NOTSET_STATUS);
         }
     }
 

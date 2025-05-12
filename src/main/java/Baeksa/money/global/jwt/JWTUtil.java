@@ -1,6 +1,7 @@
 package Baeksa.money.global.jwt;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -102,6 +103,22 @@ public class JWTUtil {
         } catch (JwtException e) {
             throw new RuntimeException("Invalid token");
         }
+    }
+
+    public boolean isValid(String token) { // 유효한지 확인 후 true, false 반환
+        try {
+            getClaims(token);
+            return true;
+        } catch (JwtException e) {
+            return false;
+        }
+    }
+
+    private Jws<Claims> getClaims(String token) throws JwtException {
+        return Jwts.parserBuilder()
+                .setSigningKey(secretKey)  // 예전 방식
+                .build()
+                .parseClaimsJws(token);
     }
 
 }

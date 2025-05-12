@@ -3,6 +3,7 @@ package Baeksa.money.domain.student.service;
 import Baeksa.money.domain.auth.Dto.MemberDto;
 import Baeksa.money.domain.auth.Entity.MemberEntity;
 import Baeksa.money.domain.auth.Service.MemberService;
+import Baeksa.money.domain.auth.enums.Status;
 import Baeksa.money.domain.student.event.LedgerRequestEvent;
 import Baeksa.money.domain.student.event.MembershipApplyEvent;
 import Baeksa.money.domain.student.event.WithdrawApproveEvent;
@@ -27,7 +28,6 @@ public class StudentPublisher {
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final MemberService memberService;
-    private final RedisService redisService;
     private final ApplicationEventPublisher eventPublisher;
 
 
@@ -66,7 +66,7 @@ public class StudentPublisher {
     public Map<String, Object> applyLedger(String councilId, StudentDto.LedgerDto ledgerDto) {
 
         MemberEntity member = memberService.findById(councilId);
-        redisService.ValidStatus(member, member.getStatus());
+        ValidStatus(member, member.getStatus());
 
         Map<String, Object> map = new HashMap<>();
         try {
@@ -127,6 +127,12 @@ public class StudentPublisher {
 
         } catch (Exception e) {
             throw new CustomException(ErrorCode.STUDENT_REJECT_WITHDRAW);
+        }
+    }
+
+    public void ValidStatus(MemberEntity entity, Status status){
+        if(entity.getStatus() != Status.APPROVE){
+            throw new CustomException(ErrorCode.NOTSET_STATUS);
         }
     }
 }

@@ -1,8 +1,12 @@
 package Baeksa.money.global.redis.service;
 
+import Baeksa.money.global.excepction.CustomException;
+import Baeksa.money.global.excepction.code.ErrorCode;
 import Baeksa.money.global.redis.RedisDto;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.Message;
@@ -28,7 +32,6 @@ public class RedisSubscriber implements MessageListener {
     private final Map<String, Consumer<Map<String, Object>>> handlerMap = new HashMap<>();
 
     public RedisSubscriber(ObjectMapper objectMapper,
-                           RedisService redisService,
                            RedisTemplate<String, Object> redisTemplate) {
         this.objectMapper = objectMapper;
         this.redisTemplate = redisTemplate;
@@ -44,6 +47,11 @@ public class RedisSubscriber implements MessageListener {
         handlerMap.put("spring:request:reject-withdraw", this::handleRejectWithdraw);
     }
 
+    @PostConstruct
+    public void init() {
+        log.info("RedisSubscriber 초기화 완료. 등록된 핸들러: {}", handlerMap.keySet());
+    }
+
     @Override
     public void onMessage(Message message, byte[] pattern) {
 
@@ -51,25 +59,29 @@ public class RedisSubscriber implements MessageListener {
 //            String publishMessage = redisTemplate.getStringSerializer().deserialize(message.getBody());
             //이건 onMessage의 파라미터 message야
             String publishMessage = new String(message.getBody(), StandardCharsets.UTF_8);
-            RedisDto.MessageDto redisDto = objectMapper.readValue(publishMessage, RedisDto.MessageDto.class);
-
-            String channel = redisDto.getChannel();
-            Map<String, Object> messages = redisDto.getMessage();
+            String channel = new String(pattern, StandardCharsets.UTF_8);
+//            RedisDto.MessageDto redisDto = objectMapper.readValue(publishMessage, RedisDto.MessageDto.class);
+//            String channel = redisDto.getChannel();
+//            Map<String, Object> messages = redisDto.getMessage();
 
             log.info("Redis Subscribe Channel : {}", channel);
             log.info("Redis SUB Message : {}", publishMessage);
 
+            // JSON 메시지를 Map으로 변환
+            Map<String, Object> messageMap = objectMapper.readValue(publishMessage,
+                    new TypeReference<Map<String, Object>>() {});
+
             // 채널별 처리 핸들러 실행
             Consumer<Map<String, Object>> handler = handlerMap.get(channel);
             if (handler != null) {
-                handler.accept(messages);
+                handler.accept(messageMap);
             } else {
                 log.warn("등록되지 않은 채널입니다: {}", channel);
             }
         }
 
         catch (JsonProcessingException e){
-            log.error("JSON 파싱 오류: {}", e.getMessage());
+            throw new CustomException(ErrorCode.JSON_FAILED);
         }
         catch (Exception e) {
             log.error("Redis 메시지 처리 실패: {}", e.getMessage(), e);
@@ -126,23 +138,5 @@ public class RedisSubscriber implements MessageListener {
         log.info("수신된 ID: {}", id);
         return id;
     }
-//    // 공통 캐싱 처리 함수
-//    // id까지 받아서 처리하는 메소드로 바꾸자.....
-//    private void handleCommonCaching(Map<String, Object> msg) {
-//        String id = (String) msg.get("Id"); //requestId, ledgerEntryId
-//
-//
-//
-//        String[] parts = redisService.getParts(id);
-//
-////        String theme = parts[0];
-////        String studentId = parts[2];
-////        String redisKey = theme + "_" + studentId;
-////
-////        Duration ttl = Duration.ofHours(4);
-////        redisTemplate.opsForValue().set(redisKey, id, ttl);
-////
-////        log.info("Redis 캐싱 완료: {} → {}", redisKey, id);
-//    }
 }
 

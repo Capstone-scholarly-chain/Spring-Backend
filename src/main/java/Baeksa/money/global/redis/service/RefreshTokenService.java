@@ -48,15 +48,6 @@ public class RefreshTokenService {
         }
     }
 
-    //헤더에서 access 토큰 꺼냄
-    public String extractAccessFromHeader(HttpServletRequest request) {
-        String authHeader = request.getHeader("Authorization");
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            return authHeader.substring(7); // "Bearer " 이후의 실제 토큰 값
-        }
-        return "access토큰 못꺼냄";
-    }
-
     //블랙리스트 등록
     public void blacklist(String accessToken, Long expirationMillis) {
         RedisConnection connection = redisConnectionFactory.getConnection();
@@ -82,24 +73,12 @@ public class RefreshTokenService {
 
     public RedisDto.TokenResponse refreshValid(RedisDto.Refresh refresh) {
 
-//        //1. 쿠키에서 refresh 토큰 꺼내기
-//        String refresh = getCookieValue(request.getCookies(), "refresh");
-//        if (refresh == null) {
-//            throw new CustomException(ErrorCode.TOKEN_NOTFOUND);
-//        }
-
         //2. 만료 여부 체크
         try {
             jwtUtil.isExpired(refresh.getRefresh_token());
         } catch (ExpiredJwtException e) {
             throw new CustomException(ErrorCode.EXPIRED_TOKEN);
         }
-
-//        //3. 카테고리 체크
-//        String category = jwtUtil.getCategory(refresh.getRefresh());
-//        if (!category.equals("refresh")){
-//            throw new CustomException(ErrorCode.INVALID_TOKEN);
-//        }
 
         //4. redis 토큰과 비교
         Optional<RefreshToken> redisTokenOpt = refreshTokenRepository.findById(jwtUtil.getStudentId(refresh.getRefresh_token()));

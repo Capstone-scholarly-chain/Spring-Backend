@@ -35,24 +35,49 @@ public class SwaggerConfig {
 
     @Bean
     public OpenAPI swagger() {
-        Info info = new Info().title("블록체인을 활용한 학생회 장부 시스템").description("실습용 Swagger").version("0.0.1");
-
-        String securityScheme = "bearerAuth";
-        SecurityRequirement securityRequirement = new SecurityRequirement().addList(securityScheme);
+        Info info = new Info()
+                .title("블록체인을 활용한 학생회 장부 시스템")
+                .description("실습용 Swagger")
+                .version("0.0.1");
 
         Components components = new Components()
-                .addSecuritySchemes(securityScheme, new SecurityScheme()
-                        .name(securityScheme)
+                // ✅ Bearer 인증
+                .addSecuritySchemes("bearerAuth", new SecurityScheme()
                         .type(SecurityScheme.Type.HTTP)
-                        .scheme("Bearer")
-                        .bearerFormat("JWT"));
+                        .scheme("bearer")
+                        .bearerFormat("JWT"))
+                // ✅ Basic 인증 추가
+                .addSecuritySchemes("basicAuth", new SecurityScheme()
+                        .type(SecurityScheme.Type.HTTP)
+                        .scheme("basic"));
+
+        // 기본으로 Bearer 적용 (원하면 생략 가능)
+        SecurityRequirement securityRequirement = new SecurityRequirement().addList("bearerAuth");
 
         return new OpenAPI()
                 .info(info)
                 .addServersItem(new Server().url("/"))
-                .addSecurityItem(securityRequirement)
-                .components(components);
+                .components(components)
+                .addSecurityItem(securityRequirement); // 기본 인증은 Bearer로
     }
+//        Info info = new Info().title("블록체인을 활용한 학생회 장부 시스템").description("실습용 Swagger").version("0.0.1");
+//
+//        String securityScheme = "bearerAuth";
+//        SecurityRequirement securityRequirement = new SecurityRequirement().addList(securityScheme);
+//
+//        Components components = new Components()
+//                .addSecuritySchemes(securityScheme, new SecurityScheme()
+//                        .name(securityScheme)
+//                        .type(SecurityScheme.Type.HTTP)
+//                        .scheme("Bearer")
+//                        .bearerFormat("JWT"));
+//
+//        return new OpenAPI()
+//                .info(info)
+//                .addServersItem(new Server().url("/"))
+//                .addSecurityItem(securityRequirement)
+//                .components(components);
+//    }
 
     /**
      * BaseErrorCode 타입의 이넘값들을 문서화 시킵니다. ExplainError 어노테이션으로 부가설명을 붙일수있습니다. 필드들을 가져와서 예시 에러 객체를

@@ -1,8 +1,11 @@
 package Baeksa.money.domain.ledger;
 
+import Baeksa.money.global.excepction.CustomException;
+import Baeksa.money.global.excepction.code.ErrorCode;
 import Baeksa.money.global.redis.RedisDto;
 import Baeksa.money.global.redis.service.RedisService;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -54,55 +57,71 @@ public class LedgerSubService implements MessageListener {
 
         try {
 //            String publishMessage = redisTemplate.getStringSerializer().deserialize(message.getBody());
-            //이건 onMessage의 파라미터 message야
+            //이건 onMessage의 파라미터 message야, pattern으로 채널 뽑을 수 있음
             String publishMessage = new String(message.getBody(), StandardCharsets.UTF_8);
-            RedisDto.MessageDto redisDto = objectMapper.readValue(publishMessage, RedisDto.MessageDto.class);
+            String channel = new String(pattern, StandardCharsets.UTF_8);
 
-            String channel = redisDto.getChannel();
-            Map<String, Object> messages = redisDto.getMessage();
+            log.info("Redis 메시지 수신 - 채널: {}, 메시지: {}", channel, publishMessage);
 
-            log.info("Redis Subscribe Channel : {}", channel);
-            log.info("Redis SUB Message : {}", publishMessage);
+            // JSON 메시지를 Map으로 변환
+            Map<String, Object> messageMap = objectMapper.readValue(publishMessage,
+                    new TypeReference<Map<String, Object>>() {});
 
             // 채널별 처리 핸들러 실행
             Consumer<Map<String, Object>> handler = handlerMap.get(channel);
             if (handler != null) {
-                handler.accept(messages);
+                handler.accept(messageMap);
             } else {
-                log.warn("등록되지 않은 채널입니다: {}", channel);
+//                // eventType을 통한 대체 채널 식별 시도
+//                String eventType = (String) messageMap.get("eventType");
+//                if (eventType != null) {
+//                    log.info("채널 대신 eventType으로 핸들러 식별 시도: {}", eventType);
+//                    handler = getHandlerByEventType(eventType);
+//                    if (handler != null) {
+//                        handler.accept(messageMap);
+//                        return;
+//                    }
+//                }
+                throw new CustomException(ErrorCode.NO_CHANNEL);
             }
-        }
-
-        catch (JsonProcessingException e){
+        } catch (JsonProcessingException e) {
             log.error("JSON 파싱 오류: {}", e.getMessage());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.error("Redis 메시지 처리 실패: {}", e.getMessage(), e);
         }
     }
-
+//    // eventType을 기반으로 핸들러 반환
+//    private Consumer<Map<String, Object>> getHandlerByEventType(String eventType) {
+//        switch (eventType) {
+//            case "TEST_PUBLISHER_REQUEST":
+//                return this::handleTest;
+//            // 다른 이벤트 타입에 대한 핸들러 매핑 추가
+//            default:
+//                return null;
+//        }
+//    }
 
     /// ///////////////////////////////////
 
     private void handleDepositCreated(Map<String, Object> msg) {
-        log.info("입금 생성");
+        log.info("입금 생성: {}", msg);
 
     }
 
     private void handleDepositUpdated(Map<String, Object> msg) {
-        log.info("입금 업데이트");
+        log.info("입금 업데이트: {}", msg);
 
     }
 
     // 승인 처리 로직
     private void handleDepositApproved(Map<String, Object> msg) {
-        log.info("입금 승인");
+        log.info("입금 승인: {}", msg);
 
     }
 
     // 거절 처리 로직
     private void handleDepositRejected(Map<String, Object> msg) {
-        log.info("입금 거절");
+        log.info("입금 거절: {}", msg);
 
     }
 
@@ -111,22 +130,22 @@ public class LedgerSubService implements MessageListener {
 
     /// ////////////////////////////////
     private void handleWithdrawCreated(Map<String, Object> msg) {
-        log.info("출금 생성");
+        log.info("출금 생성: {}", msg);
 
     }
 
     private void handleWithdrawUpdated(Map<String, Object> msg) {
-        log.info("출금 업데이트");
+        log.info("출금 업데이트: {}", msg);
 
     }
 
     private void handleWithdrawApproved(Map<String, Object> msg) {
-        log.info("출금 승인");
+        log.info("출금 승인: {}", msg);
 
     }
 
     private void handleWithdrawRejected(Map<String, Object> msg) {
-        log.info("출금 거절");
+        log.info("출금 거절: {}", msg);
 
     }
 

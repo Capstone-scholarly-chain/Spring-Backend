@@ -1,5 +1,8 @@
 package Baeksa.money.global.redis;
 
+import Baeksa.money.domain.committee.service.CommitteeSubscriber;
+import Baeksa.money.domain.ledger.LedgerSubService;
+import Baeksa.money.domain.student.service.StudentSubscriber;
 import Baeksa.money.global.redis.service.RedisSubscriber;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -94,22 +97,46 @@ public class RedisConfig {
 
     @Bean
     public RedisMessageListenerContainer redisMessageListener(RedisConnectionFactory factory,
-                                                              RedisSubscriber subscriber){
+                                                              RedisSubscriber subscriber,
+                                                              CommitteeSubscriber committeeSubscriber,
+                                                              LedgerSubService ledgerSubService){
         RedisMessageListenerContainer container = new RedisMessageListenerContainer();
         container.setConnectionFactory(factory);
 
         // 채널 지정 - 22개
-        container.addMessageListener(subscriber, new ChannelTopic("test.publisher.request"));
-        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:register-user"));
-        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:membership:updated"));
-        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:membership:approve"));
-        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:membership:rejected"));
-        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:deposit:created"));
-        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:deposit:updated"));
-        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:deposit:approved"));
-        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:deposit:rejected"));
-        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:withdraw:created"));
-        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:withdraw:updated"));
+//        container.addMessageListener(subscriber, new ChannelTopic("test.publisher.request"));
+//        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:register-user"));
+//        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:membership:updated"));
+//        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:membership:approve"));
+//        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:membership:rejected"));
+//        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:deposit:created"));
+//        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:deposit:updated"));
+//        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:deposit:approved"));
+//        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:deposit:rejected"));
+//        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:withdraw:created"));
+//        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:withdraw:updated"));
+//        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:withdraw:result"));
+//        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:error"));
+//        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:student-count"));
+//        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:student-council-count"));
+//        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:pending-register"));
+//        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:status-register"));
+//        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:pending-deposits"));
+//        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:pending-withdraws"));
+//        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:withdraw-vote-status"));
+//        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:thema-balance"));
+//        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:thema-balances"));
+        container.addMessageListener(committeeSubscriber, new ChannelTopic("test.publisher.request"));
+        container.addMessageListener(committeeSubscriber, new ChannelTopic("nestjs:response:register-user"));
+        container.addMessageListener(committeeSubscriber, new ChannelTopic("nestjs:response:membership:updated"));
+        container.addMessageListener(committeeSubscriber, new ChannelTopic("nestjs:response:membership:approve"));
+        container.addMessageListener(committeeSubscriber, new ChannelTopic("nestjs:response:membership:rejected"));
+        container.addMessageListener(ledgerSubService, new ChannelTopic("nestjs:response:deposit:created"));
+        container.addMessageListener(ledgerSubService, new ChannelTopic("nestjs:response:deposit:updated"));
+        container.addMessageListener(ledgerSubService, new ChannelTopic("nestjs:response:deposit:approved"));
+        container.addMessageListener(ledgerSubService, new ChannelTopic("nestjs:response:deposit:rejected"));
+        container.addMessageListener(ledgerSubService, new ChannelTopic("nestjs:response:withdraw:created"));
+        container.addMessageListener(ledgerSubService, new ChannelTopic("nestjs:response:withdraw:updated"));
         container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:withdraw:result"));
         container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:error"));
         container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:student-count"));
