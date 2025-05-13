@@ -128,7 +128,6 @@ public class RefreshTokenService {
         Cookie cookie = new Cookie(key, value);
         cookie.setMaxAge(expiry);
         cookie.setHttpOnly(true);
-        cookie.setSecure(true);
         cookie.setPath("/");
         return cookie;
     }

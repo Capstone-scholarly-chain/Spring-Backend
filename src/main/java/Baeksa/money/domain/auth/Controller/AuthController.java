@@ -150,8 +150,8 @@ public class AuthController {
 
         try {
             // 헤더에서 access 꺼내기
-//        String accessToken = refreshTokenService.extractAccessFromHeader(request);
-            String accessToken = refreshTokenService.getCookieValue(request.getCookies(), "access_token");
+            String accessToken = extractAccessFromHeader(request);
+
             log.info("access: {}", accessToken);
 
 
@@ -193,6 +193,13 @@ public class AuthController {
                     .body("로그아웃 처리 중 오류가 발생했습니다.");
         }
 
+    }
+    public String extractAccessFromHeader(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return authHeader.substring(7); // "Bearer " 이후의 실제 토큰 값
+        }
+        return "access토큰 못꺼냄";
     }
 
 }
