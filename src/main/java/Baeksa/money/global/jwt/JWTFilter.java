@@ -69,7 +69,8 @@ protected void doFilterInternal(HttpServletRequest request, HttpServletResponse 
                     log.info("4. userDetails 로드됨");
 
                     UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                            new UsernamePasswordAuthenticationToken(userDetails,
+                                    null, userDetails.getAuthorities());
 
                     // SecurityContextHolder에 인증 정보 넣기
                     SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -171,12 +172,12 @@ protected void doFilterInternal(HttpServletRequest request, HttpServletResponse 
     //헤더에서 access 토큰 꺼냄
     public String extractAccessFromHeader(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
-        log.info("authHeader: {}", authHeader);
+        log.info("authHeader1: {}", authHeader);
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            log.info("authHeader: {}", authHeader);
+            log.info("authHeader2: {}", authHeader);
             return authHeader.substring(7); // "Bearer " 이후의 실제 토큰 값
         }
-        log.info("authHeader: {}", authHeader);
-        return "access토큰 못꺼냄";
+        log.info("authHeader3: {}", authHeader);
+        return null;
     }
 }

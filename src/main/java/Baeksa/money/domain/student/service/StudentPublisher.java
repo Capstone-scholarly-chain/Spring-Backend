@@ -76,9 +76,10 @@ public class StudentPublisher {
             map.put("description", ledgerDto.getDescription());
             map.put("documentURL", ledgerDto.getDocumentURL());
 
+            // nestjs 한테 Pub
             publish("spring:request:ledger", map);
 
-            // 이벤트 발행 (내부 처리용)
+            // 이벤트 발행 (내부 처리용) SPRING 내부로 이벤트 발행 그러면 또다른 스프링 스레드가 얘 이벤트를 구독하고 실행하는거다.
             eventPublisher.publishEvent(new LedgerRequestEvent("spring:request:ledger", map));
             return map;
 

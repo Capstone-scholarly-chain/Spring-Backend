@@ -146,7 +146,8 @@ public class AuthController {
     )
     @Operation(summary = "로그아웃 API")
     @PostMapping("/api/auth/logout")
-    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<?> logout(HttpServletRequest request,
+                                    HttpServletResponse response) {
 
         try {
             // 헤더에서 access 꺼내기
@@ -167,14 +168,14 @@ public class AuthController {
             refreshTokenService.blacklist(accessToken, jwtUtil.getExpiration(accessToken));
 
 
-            //로그아웃 전에 refresh 검증할 필요가 있을까? -> 만료 여부만 체크
-            String refresh = refreshTokenService.getCookieValue(request.getCookies(), "refresh_token");
-            try {
-                jwtUtil.isExpired(refresh);
-            } catch (ExpiredJwtException e) {
-                throw new CustomException(ErrorCode.EXPIRED_TOKEN);
-            }
-            log.info("refresh: {}", refresh);
+//            //로그아웃 전에 refresh 검증할 필요가 있을까? -> 만료 여부만 체크
+//            String refresh = refreshTokenService.getCookieValue(request.getCookies(), "refresh_token");
+//            try {
+//                jwtUtil.isExpired(refresh);
+//            } catch (ExpiredJwtException e) {
+//                throw new CustomException(ErrorCode.EXPIRED_TOKEN);
+//            }
+//            log.info("refresh: {}", refresh);
 
             //해당 refresh토큰 삭제
             String studentId = jwtUtil.getStudentId(accessToken);
@@ -194,12 +195,15 @@ public class AuthController {
         }
 
     }
+
     public String extractAccessFromHeader(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
+        log.info("authHeader1: {}", authHeader);
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            log.info("authHeader2: {}", authHeader);
             return authHeader.substring(7); // "Bearer " 이후의 실제 토큰 값
         }
-        return "access토큰 못꺼냄";
+        log.info("authHeader3: {}", authHeader);
+        return null;
     }
-
 }

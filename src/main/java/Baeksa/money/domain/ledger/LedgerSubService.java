@@ -48,7 +48,7 @@ public class LedgerSubService implements MessageListener {
 
         handlerMap.put("nestjs:response:withdraw:created", this::handleWithdrawCreated);
         handlerMap.put("nestjs:response:withdraw:updated", this::handleWithdrawUpdated);
-        handlerMap.put("nestjs:response:withdraw:updated", this::handleWithdrawApproved);
+        handlerMap.put("nestjs:response:withdraw:vote-update", this::handleWithdrawApproved);
         handlerMap.put("nestjs:response:withdraw:result", this::handleWithdrawRejected);
     }
 
