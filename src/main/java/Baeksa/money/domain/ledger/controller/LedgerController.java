@@ -32,6 +32,14 @@ public class LedgerController {
         return ResponseEntity.ok(new BaseApiResponse<>(200, "PUBSUB-REJECT", "학생회 가입 거절", null));
     }
 
+    //내가 키 쪼회하고 3초 기다리는
+//    @Operation(summary = "조회 test")
+//    @GetMapping("/test2")
+//    public ResponseEntity<?> test2(){
+//        ledgerService.
+//        return ResponseEntity.ok(new BaseApiResponse<>(200, "PUBSUB-REJECT", "학생회 가입 거절", null));
+//    }
+
 
 //    VOTE_REGISTER_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "SUB_007", "투표 등록 실패"),
 //    ONE_THEME_BALANCE_REGISTER_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "SUB_008", "하나의 테마 잔액 등록 실패"),

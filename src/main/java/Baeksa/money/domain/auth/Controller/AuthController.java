@@ -5,38 +5,26 @@ import Baeksa.money.domain.auth.Dto.MemberDto;
 import Baeksa.money.domain.auth.Entity.MemberEntity;
 import Baeksa.money.domain.auth.Service.AuthService;
 import Baeksa.money.domain.auth.Service.MemberService;
-import Baeksa.money.domain.auth.Service.StudentService;
+import Baeksa.money.domain.auth.Service.StudentValidService;
 import Baeksa.money.domain.auth.converter.MemberConverter;
-import Baeksa.money.domain.auth.exception.AuthErrorCode;
 import Baeksa.money.global.config.swagger.ApiErrorCodeExample;
 import Baeksa.money.global.excepction.code.BaseApiResponse;
 import Baeksa.money.global.excepction.CustomException;
 import Baeksa.money.global.excepction.code.ErrorCode;
-import Baeksa.money.global.excepction.code.ErrorResponse;
-import Baeksa.money.global.jwt.CustomUserDetails;
 import Baeksa.money.global.jwt.JWTUtil;
 import Baeksa.money.global.redis.RedisDto;
 import Baeksa.money.domain.committee.service.CommitteePublisher;
 import Baeksa.money.global.redis.service.RefreshTokenService;
-import io.jsonwebtoken.ExpiredJwtException;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -52,7 +40,7 @@ import java.util.Map;
 public class AuthController {
 
     private final MemberService memberService;
-    private final StudentService studentService;
+    private final StudentValidService studentValidService;
     private final MemberConverter memberConverter;
     private final RefreshTokenService refreshTokenService;
     private final JWTUtil jwtUtil;
@@ -70,7 +58,7 @@ public class AuthController {
 
         //학생정보가 맞는지 studentService에서 검증 로직 실행
         try {
-            boolean ValidStudent = studentService.signupValid(
+            boolean ValidStudent = studentValidService.signupValid(
                     memberDto.getStudentId(),
                     memberDto.getUsername(),
                     memberDto.getPhoneNumber(),

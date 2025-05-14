@@ -1,6 +1,5 @@
 package Baeksa.money.domain.error;
 
-import Baeksa.money.domain.committee.service.CommitteePubSubService;
 import Baeksa.money.global.excepction.CustomException;
 import Baeksa.money.global.excepction.code.ErrorCode;
 import Baeksa.money.global.redis.RedisDto;
@@ -9,7 +8,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;

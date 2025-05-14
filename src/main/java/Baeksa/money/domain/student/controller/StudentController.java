@@ -3,6 +3,7 @@ package Baeksa.money.domain.student.controller;
 
 import Baeksa.money.domain.student.dto.StudentDto;
 import Baeksa.money.domain.student.service.StudentPublisher;
+import Baeksa.money.domain.student.service.StudentService;
 import Baeksa.money.global.config.swagger.ApiErrorCodeExample;
 import Baeksa.money.global.excepction.code.BaseApiResponse;
 import Baeksa.money.global.excepction.code.ErrorCode;
@@ -13,10 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -28,6 +26,7 @@ import java.util.Map;
 public class StudentController {
 
     private final StudentPublisher studentPublisher;
+    private final StudentService studentService;
 
     @ApiErrorCodeExample(value = ErrorCode.class, include = {"STUDENT_APPLY"})
     @Operation(summary = "학생 가입 신청 - 학생 화면")
@@ -70,4 +69,13 @@ public class StudentController {
         return ResponseEntity.ok(new BaseApiResponse<>(200, "PUBSUB-REJECT-WITHDRAW", "출금 기입 거절", map));
     }
 
+
+    @ApiErrorCodeExample(value = ErrorCode.class, include = {""})
+    @Operation(summary = "학생 수 조회")
+    @GetMapping("/student-count")
+    public ResponseEntity<?> getStudentCount(){
+
+        int count = studentService.findStudentCount();
+        return ResponseEntity.ok(new BaseApiResponse<>(200, "FIND-STUDENTS-COUNTS", "모든 학생 수 조회", count));
+    }
 }

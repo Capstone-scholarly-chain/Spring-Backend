@@ -1,9 +1,9 @@
 package Baeksa.money.domain.committee.controller;
 
 import Baeksa.money.domain.committee.dto.CommitteeDto;
-import Baeksa.money.domain.committee.service.CommitteePubSubService;
-import Baeksa.money.domain.ledger.dto.VoteDto;
+import Baeksa.money.domain.committee.service.CommitteeService;
 import Baeksa.money.domain.student.dto.StudentDto;
+import Baeksa.money.domain.student.service.StudentService;
 import Baeksa.money.global.config.swagger.ApiErrorCodeExample;
 import Baeksa.money.global.excepction.code.BaseApiResponse;
 import Baeksa.money.global.excepction.code.ErrorCode;
@@ -34,7 +34,7 @@ import java.util.Map;
 public class CommitteeController {
 
     private final CommitteePublisher committeePublisher;
-    private final CommitteePubSubService committeePubSubService;
+    private final CommitteeService committeeService;
 
 //    @ApiErrorCodeExample(value = ErrorCode.class, include = {"INVALID_APPROVAL", "COMMITTEE_APPROVE"})
     @PostMapping("/a")
@@ -47,6 +47,7 @@ public class CommitteeController {
         committeePublisher.publish("spring:request:approve", map);
         return ResponseEntity.ok(new BaseApiResponse<>(200, "PUBSUB-APPROVE", "학생회 가입 승인", map));
     }
+
     //    @Operation(description = "학생회 가입 신청 - 학생회 화면") 없앰
 // 학생회가 가입 신청하면 학생회가 승인/거절한다고..
     @Operation(summary = "학생회 가입 승인 - 학생회화면")
@@ -101,42 +102,13 @@ public class CommitteeController {
         return ResponseEntity.ok(new BaseApiResponse<>(200, "PUBSUB-REJECT-DEPOSIT", "학생회가 입금 내역 거절", map));
     }
 
-    /// ////조회 서비스
     @ApiErrorCodeExample(value = ErrorCode.class, include = {""})
-    @Operation(summary = "학생 조직원 수 조회")
-    @GetMapping("/students-count")
-    public ResponseEntity<?> getStudentsCount(){
-
-        int count = committeePubSubService.findStudentCount();
-        return ResponseEntity.ok(new BaseApiResponse<>(200, "FIND-STUDENTS-COUNTS", "학생 조직원 수 조회", count));
-    }
-
-    @ApiErrorCodeExample(value = ErrorCode.class, include = {""})
-    @Operation(summary = "학생 조직원 수 조회")
+    @Operation(summary = "학생회 수 조회")
     @GetMapping("/committee-count")
     public ResponseEntity<?> getCommitteeCount(){
 
-        int count = committeePubSubService.findCommitteeCount();
-        return ResponseEntity.ok(new BaseApiResponse<>(200, "FIND-COMMITTEE-COUNTS", "모든 학생회원 수 조회", count));
+        int count = committeeService.findCommitteeCount();
+        return ResponseEntity.ok(new BaseApiResponse<>(200, "FIND-COMMITTEE-COUNTS", "모든 학생회 수 조회", count));
     }
-
-    @ApiErrorCodeExample(value = ErrorCode.class, include = {""})
-    @Operation(summary = "모든 대기중인 회원가입(조직 가입) 요청 조회")
-    @GetMapping("/pending-requests")
-    public ResponseEntity<?> getPendingRequests(){
-
-        List<Map<String, Object>> list = committeePubSubService.findPendingRequests();
-        return ResponseEntity.ok(new BaseApiResponse<>(200, "FIND-PENDING-REQUESTS", "모든 대기중인 회원가입(조직 가입) 요청 조회", list));
-    }
-
-    @ApiErrorCodeExample(value = ErrorCode.class, include = {""})
-    @Operation(summary = "특정 id 회원가입(조직 가입) 요청 상태 조회")
-    @GetMapping("/register-status")
-    public ResponseEntity<?> getIdStatusRequests(@AuthenticationPrincipal CustomUserDetails userDetails) {
-
-        Map<String, Object> list = committeePubSubService.findRegisterUserStatus(userDetails.getStudentId());   //로그인된 사람의 요청 상태 조회
-        return ResponseEntity.ok(new BaseApiResponse<>(200, "FIND-ID-PENDING-REQUESTS", "특정 id 회원가입(조직 가입) 요청 상태 조회", list));
-    }
-
 }
 

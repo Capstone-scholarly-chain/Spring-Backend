@@ -5,7 +5,6 @@ import Baeksa.money.domain.auth.Entity.MemberEntity;
 import Baeksa.money.domain.auth.Service.MemberService;
 import Baeksa.money.domain.auth.enums.Status;
 import Baeksa.money.domain.committee.dto.CommitteeDto;
-import Baeksa.money.domain.committee.event.*;
 import Baeksa.money.global.excepction.CustomException;
 import Baeksa.money.global.excepction.code.ErrorCode;
 import Baeksa.money.global.redis.service.RedisService;
@@ -26,12 +25,11 @@ public class CommitteePublisher {
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final MemberService memberService;
-    private final ApplicationEventPublisher eventPublisher;
+    private final RedisService redisService;
 
     public void publish(String channel, Object message) {
         redisTemplate.convertAndSend(channel, message);
     }
-
 
     //프론트한테는 신청한 학생 학번만 받기
     public Map<String, Object> approveStudent(String councilId, CommitteeDto.approveDto approveDto) {
@@ -44,12 +42,11 @@ public class CommitteePublisher {
             try {
                 //nest에서 타임스탬프 찍어서 id 만들거임
                 //난 id로 안 보내도 되지 -> 근데 이걸 이제 클라가 해줌!
-//                committeePubSubService.getRequestId(approveDto.getRequestId());
+
                 map.put("requestId", approveDto.getRequestId());
                 map.put("applicantId", councilId);
 
-//                publish("spring:request:approve", map);
-                eventPublisher.publishEvent(new ApproveStudentEvent("spring:request:approve", map));
+                publish("spring:request:approve", map);
                 return map;
             } catch (Exception e) {
                 throw new CustomException(ErrorCode.COMMITTEE_APPROVE);
@@ -70,8 +67,7 @@ public class CommitteePublisher {
                 map.put("requestId", rejectDto.getRequestId());
                 map.put("applicantId", councilId);
 
-//                publish("spring:request:reject", map);
-                eventPublisher.publishEvent(new RejectStudentEvent("spring:request:reject", map));
+                publish("spring:request:reject", map);
                 return map;
             } catch (Exception e) {
                 throw new CustomException(ErrorCode.COMMITTEE_REJECT);
@@ -84,7 +80,7 @@ public class CommitteePublisher {
     public Map<String, Object> applyWithdraw(String councilId, CommitteeDto.LedgerDto ledgerDto) {
 
         MemberEntity member = memberService.findById(councilId);
-        ValidStatus(member, member.getStatus());
+        redisService.ValidStatus(member, member.getStatus());
 
         Map<String, Object> map = new HashMap<>();
         try {
@@ -94,9 +90,7 @@ public class CommitteePublisher {
             map.put("description", ledgerDto.getDescription());
             map.put("documentURL", ledgerDto.getDescription());
 
-//            publish("spring:request:ledger-withdraw", map);
-            eventPublisher.publishEvent(new WithdrawRequestEvent("spring:request:ledger-withdraw", map));
-
+            publish("spring:request:ledger-withdraw", map);
             return map;
         } catch (Exception e) {
             throw new CustomException(ErrorCode.COMMITTEE_WITHDRAW);
@@ -112,8 +106,7 @@ public class CommitteePublisher {
             map.put("approverId", councilId);   //학생회
             map.put("ledgerEntryId", ledgerEntryId);   //입금 요청한 학생
 
-//            publish("spring:request:approve-deposit", map);
-            eventPublisher.publishEvent(new ApproveDepositEvent("spring:request:approve-deposit", map));
+            publish("spring:request:approve-deposit", map);
             return map;
         } catch (Exception e) {
             throw new CustomException(ErrorCode.COMMITTEE_APPROVE_DEPOSIT);
@@ -131,17 +124,10 @@ public class CommitteePublisher {
             map.put("rejectorId", councilId);   //학생회
             map.put("ledgerEntryId", ledgerEntryId);   //입금 요청한 학생
 
-//            publish("spring:request:reject-deposit", map);
-            eventPublisher.publishEvent(new RejectDepositEvent("spring:request:reject-deposit", map));
+            publish("spring:request:reject-deposit", map);
             return map;
         } catch (Exception e) {
             throw new CustomException(ErrorCode.COMMITTEE_REJECT_DEPOSIT);
-        }
-    }
-
-    public void ValidStatus(MemberEntity entity, Status status){
-        if(entity.getStatus() != Status.APPROVE){
-            throw new CustomException(ErrorCode.NOTSET_STATUS);
         }
     }
 

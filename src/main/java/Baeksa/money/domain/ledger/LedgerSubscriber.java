@@ -1,14 +1,15 @@
 package Baeksa.money.domain.ledger;
 
+import Baeksa.money.domain.student.event.RedisResponseEvent;
 import Baeksa.money.global.excepction.CustomException;
 import Baeksa.money.global.excepction.code.ErrorCode;
-import Baeksa.money.global.redis.RedisDto;
-import Baeksa.money.global.redis.service.RedisService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -16,40 +17,33 @@ import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
+@RequiredArgsConstructor
 @Service
 @Slf4j
-public class LedgerSubService implements MessageListener {
+public class LedgerSubscriber implements MessageListener {
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final ObjectMapper objectMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
     // 핸들러 맵: 채널 이름 → 처리 로직
     private final Map<String, Consumer<Map<String, Object>>> handlerMap = new HashMap<>();
-    private final LedgerService ledgerService;
 
-    public LedgerSubService(ObjectMapper objectMapper,
-                            RedisTemplate<String, Object> redisTemplate, LedgerService ledgerService) {
-        this.objectMapper = objectMapper;
-        this.redisTemplate = redisTemplate;
-        this.ledgerService = ledgerService;
-
-        /// //메세지는 onMessage로 하나의 메세지리스너로 읽지만, 처리를 할때는 핸들러를 나눠서 각 채널을 처리하는게 맞음
-//        // 여기서 채널별 로직을 등록
-//        handlerMap.put("nestjs:response:deposit:created", this::handleDepositCreated);
-
+    @PostConstruct
+    public void init() {
+        // 입금 응답 구독 
         handlerMap.put("nestjs:response:deposit:created", this::handleDepositCreated);
         handlerMap.put("nestjs:response:deposit:updated", this::handleDepositUpdated);
         handlerMap.put("nestjs:response:deposit:approved", this::handleDepositApproved);
         handlerMap.put("nestjs:response:deposit:rejected", this::handleDepositRejected);
 
+        // 출금 응답 구독
         handlerMap.put("nestjs:response:withdraw:created", this::handleWithdrawCreated);
         handlerMap.put("nestjs:response:withdraw:updated", this::handleWithdrawUpdated);
-        handlerMap.put("nestjs:response:withdraw:vote-update", this::handleWithdrawApproved);
-        handlerMap.put("nestjs:response:withdraw:result", this::handleWithdrawRejected);
+        handlerMap.put("nestjs:response:withdraw:voted", this::handleWithdrawVoted);
     }
 
     @Override
@@ -72,16 +66,6 @@ public class LedgerSubService implements MessageListener {
             if (handler != null) {
                 handler.accept(messageMap);
             } else {
-//                // eventType을 통한 대체 채널 식별 시도
-//                String eventType = (String) messageMap.get("eventType");
-//                if (eventType != null) {
-//                    log.info("채널 대신 eventType으로 핸들러 식별 시도: {}", eventType);
-//                    handler = getHandlerByEventType(eventType);
-//                    if (handler != null) {
-//                        handler.accept(messageMap);
-//                        return;
-//                    }
-//                }
                 throw new CustomException(ErrorCode.NO_CHANNEL);
             }
         } catch (JsonProcessingException e) {
@@ -90,39 +74,29 @@ public class LedgerSubService implements MessageListener {
             log.error("Redis 메시지 처리 실패: {}", e.getMessage(), e);
         }
     }
-//    // eventType을 기반으로 핸들러 반환
-//    private Consumer<Map<String, Object>> getHandlerByEventType(String eventType) {
-//        switch (eventType) {
-//            case "TEST_PUBLISHER_REQUEST":
-//                return this::handleTest;
-//            // 다른 이벤트 타입에 대한 핸들러 매핑 추가
-//            default:
-//                return null;
-//        }
-//    }
 
-    /// ///////////////////////////////////
 
     private void handleDepositCreated(Map<String, Object> msg) {
         log.info("입금 생성: {}", msg);
+        eventPublisher.publishEvent(new RedisResponseEvent("nestjs:response:deposit:created", msg));
 
     }
 
     private void handleDepositUpdated(Map<String, Object> msg) {
         log.info("입금 업데이트: {}", msg);
-
+        eventPublisher.publishEvent(new RedisResponseEvent("nestjs:response:deposit:updated", msg));
     }
 
     // 승인 처리 로직
     private void handleDepositApproved(Map<String, Object> msg) {
         log.info("입금 승인: {}", msg);
-
+        eventPublisher.publishEvent(new RedisResponseEvent("nestjs:response:deposit:approved", msg));
     }
 
     // 거절 처리 로직
     private void handleDepositRejected(Map<String, Object> msg) {
         log.info("입금 거절: {}", msg);
-
+        eventPublisher.publishEvent(new RedisResponseEvent("nestjs:response:deposit:rejected", msg));
     }
 
 
@@ -131,22 +105,18 @@ public class LedgerSubService implements MessageListener {
     /// ////////////////////////////////
     private void handleWithdrawCreated(Map<String, Object> msg) {
         log.info("출금 생성: {}", msg);
-
+        eventPublisher.publishEvent(new RedisResponseEvent("nestjs:response:withdraw:created", msg));
     }
 
     private void handleWithdrawUpdated(Map<String, Object> msg) {
         log.info("출금 업데이트: {}", msg);
-
+        eventPublisher.publishEvent(new RedisResponseEvent("nestjs:response:withdraw:updated", msg));
     }
 
-    private void handleWithdrawApproved(Map<String, Object> msg) {
-        log.info("출금 승인: {}", msg);
 
-    }
-
-    private void handleWithdrawRejected(Map<String, Object> msg) {
-        log.info("출금 거절: {}", msg);
-
+    private void handleWithdrawVoted(Map<String, Object> msg) {
+        log.info("출금 투표 신청 응답: {}", msg);
+        eventPublisher.publishEvent(new RedisResponseEvent("nestjs:response:withdraw:voted", msg));
     }
 
 
@@ -159,3 +129,5 @@ public class LedgerSubService implements MessageListener {
         return id;
     }
 }
+
+

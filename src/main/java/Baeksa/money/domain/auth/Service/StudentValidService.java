@@ -4,14 +4,13 @@ import Baeksa.money.domain.auth.Entity.StudentEntity;
 import Baeksa.money.domain.auth.Repository.StudentRepository;
 import Baeksa.money.domain.auth.enums.Role;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class StudentService {
+public class StudentValidService {
 
 
     private final StudentRepository studentRepository;
