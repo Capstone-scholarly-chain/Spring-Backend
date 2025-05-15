@@ -53,16 +53,17 @@ public class AuthService {
 
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
         String role = customUserDetails.getAuthorities().iterator().next().getAuthority();
+        String username = customUserDetails.getRealUsername();  //실제 사용자 이름 가져옴
 
         // 3. JWT 발급
-        String accessToken = jwtUtil.createJwt("access", studentId, role,
+        String accessToken = jwtUtil.createJwt("access", studentId, username, role,
                 role.equals("ROLE_ADMIN") ? 21600000L : 600000L); // 6시간 or 10분
 
         String refreshToken;
         if (refreshTokenService.existsRefresh(studentId)) {
             refreshToken = refreshTokenService.getToken(studentId);
         } else {
-            refreshToken = jwtUtil.createJwt("refresh", studentId, role, 86400000L); // 24시간
+            refreshToken = jwtUtil.createJwt("refresh", studentId, username, role, 86400000L); // 24시간
             refreshTokenService.save(studentId, refreshToken);
         }
 
@@ -73,7 +74,7 @@ public class AuthService {
 
         Role roleStr = Role.valueOf(role);  //enum을 string변환한걸 다시 enum으로
         MemberDto.LoginResponse responseDto = MemberDto.LoginResponse.builder()
-                .username(customUserDetails.getUsername())
+                .username(customUserDetails.getRealUsername())
                 .studentId(customUserDetails.getStudentId())
                 .role(roleStr)
                 .build();

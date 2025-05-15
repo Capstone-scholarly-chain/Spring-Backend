@@ -22,10 +22,11 @@ public class JWTUtil {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String createJwt(String category, String studentId, String role, Long expiredMs) {
+    public String createJwt(String category, String studentId, String username, String role, Long expiredMs) {
         return Jwts.builder()
                 .claim("category", category)
                 .claim("studentId", studentId)
+                .claim("username", username)
                 .claim("role", role)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + expiredMs))
@@ -33,15 +34,15 @@ public class JWTUtil {
                 .compact();
     }
 
-//    //get메소드들은 JWT를 디코딩하여 토큰에서 정보를 추출함
-//    public String getUsername(String token) {
-//        return Jwts.parserBuilder()
-//                .setSigningKey(secretKey)
-//                .build()
-//                .parseClaimsJws(token)
-//                .getBody()
-//                .get("username", String.class);
-//    }
+    //get메소드들은 JWT를 디코딩하여 토큰에서 정보를 추출함
+    public String getUsername(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("username", String.class);
+    }
 
     public String getStudentId(String token) {
         return Jwts.parserBuilder()

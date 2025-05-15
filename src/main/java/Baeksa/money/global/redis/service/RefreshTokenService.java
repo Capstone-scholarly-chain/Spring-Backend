@@ -86,11 +86,11 @@ public class RefreshTokenService {
             throw new CustomException(ErrorCode.INVALID_TOKEN);
         }
 
-//        String username = jwtUtil.getUsername(refresh);
+        String username = jwtUtil.getUsername(refresh.getRefresh_token());
         String studentId = jwtUtil.getStudentId(refresh.getRefresh_token());
         String role = jwtUtil.getRole(refresh.getRefresh_token());
 
-        return new RedisDto.TokenResponse(studentId, role);
+        return new RedisDto.TokenResponse(studentId, role, username);
     }
 
     public ResponseEntity<?> reissue(HttpServletResponse response, RedisDto.TokenResponse tokenResponse) {
@@ -98,8 +98,8 @@ public class RefreshTokenService {
         refreshTokenRepository.deleteById(tokenResponse.getStudentId());
 
         // 6. 재발급
-        String newAccess = jwtUtil.createJwt("access_token", tokenResponse.getStudentId(), tokenResponse.getRole(), 600000L);
-        String newRefresh = jwtUtil.createJwt("refresh_token", tokenResponse.getStudentId(), tokenResponse.getRole(), 86400000L);
+        String newAccess = jwtUtil.createJwt("access_token", tokenResponse.getStudentId(), tokenResponse.getRole(), tokenResponse.getUsername(),600000L);
+        String newRefresh = jwtUtil.createJwt("refresh_token", tokenResponse.getStudentId(), tokenResponse.getRole(), tokenResponse.getUsername(),86400000L);
 
         // 7. Redis 저장 (rotate)
         refreshTokenRepository.save(new RefreshToken(tokenResponse.getStudentId(), newRefresh));

@@ -16,6 +16,7 @@ public class RedisDto {
     public static class TokenResponse {
         private final String studentId;
         private final String role;
+        private final String username;
     }
 
     @Getter

@@ -31,9 +31,10 @@ public class CustomUserDetails implements UserDetails {
     public String getUsername() {
         return memberEntity.getStudentId();
     }
-//    public String getUsername() {
-//        return memberEntity.getStudentId().toString();
-//    }
+
+    public String getRealUsername() {
+        return memberEntity.getUsername();
+    }
 
     public String getStudentId() {
         return memberEntity.getStudentId();
