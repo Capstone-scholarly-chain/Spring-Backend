@@ -1,7 +1,7 @@
 package Baeksa.money.domain.ledger.controller;
 
-import Baeksa.money.domain.ledger.LedgerPubService;
-import Baeksa.money.domain.ledger.LedgerService;
+import Baeksa.money.domain.ledger.service.LedgerPubService;
+import Baeksa.money.domain.ledger.service.LedgerService;
 import Baeksa.money.domain.ledger.dto.PendingDepositDto;
 import Baeksa.money.domain.ledger.dto.VoteDto;
 import Baeksa.money.global.config.swagger.ApiErrorCodeExample;

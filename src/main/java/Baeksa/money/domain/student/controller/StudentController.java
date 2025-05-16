@@ -28,15 +28,15 @@ public class StudentController {
     private final StudentPublisher studentPublisher;
     private final StudentService studentService;
 
-    @ApiErrorCodeExample(value = ErrorCode.class, include = {"STUDENT_APPLY"})
-    @Operation(summary = "학생 가입 신청 - 학생 화면")
-    @PostMapping("/membership")
-    public ResponseEntity<?> membership(@AuthenticationPrincipal CustomUserDetails userDetails) {
-
-        Map<String, Object> map = studentPublisher.apply(userDetails.getStudentId());
-//                fcmService.sendMessage(fcmToken, "학생 가입 신청", dto.getUsername() + "이 가입 신청했습니다.");
-        return ResponseEntity.ok(new BaseApiResponse<>(200, "PUBSUB-MEMBERSHIP", "학생 가입 신청", map));
-    }
+//    @ApiErrorCodeExample(value = ErrorCode.class, include = {"STUDENT_APPLY"})
+//    @Operation(summary = "학생 가입 신청 - 학생 화면")
+//    @PostMapping("/membership")
+//    public ResponseEntity<?> membership(@AuthenticationPrincipal CustomUserDetails userDetails) {
+//
+//        Map<String, Object> map = studentPublisher.apply(userDetails.getStudentId());
+////                fcmService.sendMessage(fcmToken, "학생 가입 신청", dto.getUsername() + "이 가입 신청했습니다.");
+//        return ResponseEntity.ok(new BaseApiResponse<>(200, "PUBSUB-MEMBERSHIP", "학생 가입 신청", map));
+//    }
 
     //프론트는 theme, amount, description, documentURL만 넘겨주면 됨
     @Operation(summary = "학생이 입금 기입 요청을 보냄 - 학생 화면")
@@ -51,23 +51,23 @@ public class StudentController {
 
     @ApiErrorCodeExample(value = ErrorCode.class, include = {"STUDENT_APPROVE_WITHDRAW"})
     @Operation(summary = "학생 출금 승인 - 학생 화면")
-    @PostMapping("approve-withdraw")
+    @PostMapping("vote-withdraw")
     public ResponseEntity<?> approve(@AuthenticationPrincipal CustomUserDetails userDetails,
                                      @RequestBody StudentDto.VoteDto dto){
 
-        Map<String, Object> map = studentPublisher.approveWithdraw(userDetails.getStudentId(), dto);
-        return ResponseEntity.ok(new BaseApiResponse<>(200, "PUBSUB-APPROVE-WITHDRAW", "출금 기입 승인", map));
+        Map<String, Object> map = studentPublisher.voteWithdraw(userDetails.getStudentId(), dto);
+        return ResponseEntity.ok(new BaseApiResponse<>(200, "VOTE-WITHDRAW", "출금 기입 투표 승인/거절", map));
     }
 
-    @ApiErrorCodeExample(value = ErrorCode.class, include = {"STUDENT_REJECT_WITHDRAW"})
-    @Operation(summary = "학생 출금 거부 - 학생 화면")
-    @PostMapping("reject-withdraw")
-    public ResponseEntity<?> reject(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                    @RequestBody StudentDto.VoteDto dto){
-
-           Map<String, Object> map = studentPublisher.rejectWithdraw(userDetails.getStudentId(), dto);
-        return ResponseEntity.ok(new BaseApiResponse<>(200, "PUBSUB-REJECT-WITHDRAW", "출금 기입 거절", map));
-    }
+//    @ApiErrorCodeExample(value = ErrorCode.class, include = {"STUDENT_REJECT_WITHDRAW"})
+//    @Operation(summary = "학생 출금 거부 - 학생 화면")
+//    @PostMapping("reject-withdraw")
+//    public ResponseEntity<?> reject(@AuthenticationPrincipal CustomUserDetails userDetails,
+//                                    @RequestBody StudentDto.VoteDto dto){
+//
+//           Map<String, Object> map = studentPublisher.voteWithdraw(userDetails.getStudentId(), dto);
+//        return ResponseEntity.ok(new BaseApiResponse<>(200, "PUBSUB-REJECT-WITHDRAW", "출금 기입 거절", map));
+//    }
 
 
     @ApiErrorCodeExample(value = ErrorCode.class, include = {""})

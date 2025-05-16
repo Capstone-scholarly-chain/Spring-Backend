@@ -34,7 +34,7 @@ public class JWTUtil {
                 .compact();
     }
 
-    //get메소드들은 JWT를 디코딩하여 토큰에서 정보를 추출함
+    //get메소드들은 JWT를 디코딩하여 토큰에서 정보를 추출함Sss
     public String getUsername(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(secretKey)

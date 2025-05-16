@@ -7,12 +7,13 @@ public enum ErrorCode implements BaseErrorCode {
     /// 공통
     INTERNAL_SERVER(HttpStatus.INTERNAL_SERVER_ERROR, "COMMON_500", "서버 오류가 발생했습니다."),
 
-    /// 회원가입
+    /// AUTH
     DUPICATED_MEMBER(HttpStatus.BAD_REQUEST, "MEMBER_001", "이미 가입된 학생입니다."),
     STUDENT_NOTFOUND(HttpStatus.NOT_FOUND, "MEMBER_002", "해당 학생 정보를 찾을 수 없습니다."),
     PASSWORD_NOT_MATCH(HttpStatus.BAD_REQUEST, "MEMBER_003", "비밀번호가 일치하지 않습니다."),
     INVALID_AUTH_HEADER(HttpStatus.UNAUTHORIZED, "MEMBER_004", "인증 헤더가 필요합니다."),
     INVALID_AUTH_HEADER2(HttpStatus.UNAUTHORIZED, "MEMBER_005", "잘못된 인증 형식입니다."),
+    LOGOUT(HttpStatus.INTERNAL_SERVER_ERROR, "MEMBER_006", "로그아웃 실패"),
 
     /// jwt
     EXPIRED_TOKEN(HttpStatus.BAD_REQUEST, "JWT_001", "refreshToken이 만료되었습니다."),
@@ -55,8 +56,8 @@ public enum ErrorCode implements BaseErrorCode {
     //학생 가입 신청, 학생 입금 기입 요청, 학생 출금 승인, 학생 출금 거부,
     STUDENT_APPLY(HttpStatus.INTERNAL_SERVER_ERROR, "STUDENT_001", "학생 가입 신청 실패."),
     STUDENT_APPLY_LEDGER(HttpStatus.INTERNAL_SERVER_ERROR, "STUDENT_002", "학생 가입 신청 실패."),
-    STUDENT_APPROVE_WITHDRAW(HttpStatus.INTERNAL_SERVER_ERROR, "STUDENT_003", "학생 출금 승인."),
-    STUDENT_REJECT_WITHDRAW(HttpStatus.INTERNAL_SERVER_ERROR, "STUDENT_004", "학생 출금 거부."),
+    STUDENT_WITHDRAW(HttpStatus.INTERNAL_SERVER_ERROR, "STUDENT_003", "학생 출금 투표 실패"),
+
 
     //학생회 가입 승인, 학생회 가입 거절, 학생회 출금 기입 신청, 학생회 입금 승인, 학생회 입금 거절
     COMMITTEE_APPROVE(HttpStatus.INTERNAL_SERVER_ERROR, "COMMITTEE_001", "학생회 가입 승인 실패."),
@@ -65,10 +66,13 @@ public enum ErrorCode implements BaseErrorCode {
     COMMITTEE_APPROVE_DEPOSIT(HttpStatus.INTERNAL_SERVER_ERROR, "COMMITTEE_004", "학생회 입금 승인 실패."),
     COMMITTEE_REJECT_DEPOSIT(HttpStatus.INTERNAL_SERVER_ERROR, "COMMITTEE_005", "학생회 입금 거절 실패."),
 
+    //핑퐁 구조
     GET_STUDENTS_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "TIMEOUT_001", "학생 조직원 수 조회 실패"),
     STUDENT_COUNT_TIMEOUT(HttpStatus.INTERNAL_SERVER_ERROR, "TIMEOUT_002", "학생 조직원 수 응답 타임아웃"),
     STUDENT_COUNT_NOT_AVAILABLE(HttpStatus.INTERNAL_SERVER_ERROR, "TIMEOUT_003", "학생 조직원 수 응답 후에도 값이 없음"),
     REQUEST_TIMEOUT(HttpStatus.INTERNAL_SERVER_ERROR, "TIMEOUT_003", "REQUEST_TIMEOUT"),
+    REQUEST_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "TIMEOUT_003", "REQUEST_FAILED"),
+    REQUEST_INTERRUPTED(HttpStatus.INTERNAL_SERVER_ERROR, "TIMEOUT_003", "REQUEST_INTERRUPTED"),
     DATA_NOT_AVAILABLE(HttpStatus.INTERNAL_SERVER_ERROR, "TIMEOUT_003", "DATA_NOT_AVAILABLE"),
     GET_USER_STATUS_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "TIMEOUT_003", "GET_USER_STATUS_FAILED"),
     GET_PENDING_REQUESTS_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "TIMEOUT_003", "GET_PENDING_REQUESTS_FAILED"),

@@ -20,6 +20,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
 
 @Slf4j
 @Service
@@ -55,8 +57,6 @@ public class StudentPublisher {
 
             publish("spring:request:membership", map);
 
-            // 이벤트 발행 (내부 처리용)
-            eventPublisher.publishEvent(new MembershipApplyEvent("spring:request:membership", map));
             return map;
         } catch (Exception e) {
             throw new CustomException(ErrorCode.STUDENT_APPLY);
@@ -79,8 +79,6 @@ public class StudentPublisher {
             // nestjs 한테 Pub
             publish("spring:request:ledger", map);
 
-            // 이벤트 발행 (내부 처리용) SPRING 내부로 이벤트 발행 그러면 또다른 스프링 스레드가 얘 이벤트를 구독하고 실행하는거다.
-            eventPublisher.publishEvent(new LedgerRequestEvent("spring:request:ledger", map));
             return map;
 
         } catch (Exception e) {
@@ -88,46 +86,24 @@ public class StudentPublisher {
         }
     }
 
-    public Map<String, Object> approveWithdraw(String voterId, StudentDto.VoteDto dto) {
+    public Map<String, Object> voteWithdraw(String voterId, StudentDto.VoteDto dto) {
 
         Map<String, Object> map = new HashMap<>();
         try {
             map.put("voterId", voterId);   //투표한 학생
             if (dto.isVote()) {
                 map.put("vote", "approve");
+            } else {
+                map.put("vote", "reject");
             }
             map.put("ledgerEntryId", dto.getLedgerEntryId());   //출금 기입한 학생회
 
-            publish("spring:request:approve-withdraw", map);
+            publish("spring:request:vote-withdraw", map);
 
-            // 이벤트 발행 (내부 처리용)
-            eventPublisher.publishEvent(new WithdrawApproveEvent("spring:request:approve-withdraw", map));
             return map;
 
         } catch (Exception e) {
-            throw new CustomException(ErrorCode.STUDENT_APPROVE_WITHDRAW);
-        }
-    }
-
-    public Map<String, Object> rejectWithdraw(String voterId, StudentDto.VoteDto dto) {
-
-        Map<String, Object> map = new HashMap<>();
-        try {
-            map.put("voterId", voterId);   //투표한 학생
-            if(!dto.isVote()) {
-                map.put("vote", "reject");
-            }
-            map.put("ledgerEntryId", dto.getLedgerEntryId()); //출금 기입한 학생회
-            //ledgerEntryId 조회하는 api를 만들면 클라이언트가 보낼것임 - 난 그대로 보내자!
-
-            publish("spring:request:reject-withdraw", map);
-
-            // 이벤트 발행 (내부 처리용)
-            eventPublisher.publishEvent(new WithdrawRejectEvent("spring:request:reject-withdraw", map));
-            return map;
-
-        } catch (Exception e) {
-            throw new CustomException(ErrorCode.STUDENT_REJECT_WITHDRAW);
+            throw new CustomException(ErrorCode.STUDENT_WITHDRAW);
         }
     }
 

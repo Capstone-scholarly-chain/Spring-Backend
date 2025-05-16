@@ -1,4 +1,4 @@
-package Baeksa.money.domain.ledger;
+package Baeksa.money.domain.ledger.service;
 
 import Baeksa.money.domain.ledger.dto.PendingDepositDto;
 import Baeksa.money.domain.ledger.dto.VoteDto;

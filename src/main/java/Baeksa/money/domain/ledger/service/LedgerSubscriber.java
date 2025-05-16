@@ -1,4 +1,4 @@
-package Baeksa.money.domain.ledger;
+package Baeksa.money.domain.ledger.service;
 
 import Baeksa.money.domain.student.event.RedisResponseEvent;
 import Baeksa.money.global.excepction.CustomException;

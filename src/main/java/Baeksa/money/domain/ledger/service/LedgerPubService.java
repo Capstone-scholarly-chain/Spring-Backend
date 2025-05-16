@@ -1,14 +1,6 @@
-package Baeksa.money.domain.ledger;
+package Baeksa.money.domain.ledger.service;
 
-import Baeksa.money.domain.auth.Entity.MemberEntity;
-import Baeksa.money.domain.auth.Service.MemberService;
-import Baeksa.money.domain.auth.enums.Status;
-import Baeksa.money.domain.committee.dto.CommitteeDto;
-import Baeksa.money.domain.ledger.dto.TestDto;
 import Baeksa.money.domain.student.dto.StudentDto;
-import Baeksa.money.global.excepction.CustomException;
-import Baeksa.money.global.excepction.code.ErrorCode;
-import Baeksa.money.global.redis.service.RedisService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

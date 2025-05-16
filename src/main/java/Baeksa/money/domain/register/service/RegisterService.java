@@ -27,7 +27,6 @@ public class RegisterService {
     private static final String PENDING_REGISTER_CHANNEL = "spring:request:pending-register";
     private static final String REGISTER_STATUS_KEY_PREFIX = "membership:request:";
     private static final String REGISTER_STATUS_CHANNEL = "spring:request:register-user-status";
-
     private static final int REQUEST_TIMEOUT_SECONDS = 3;
 /// ///////레지스터에 3초 조회 기다리는거
 

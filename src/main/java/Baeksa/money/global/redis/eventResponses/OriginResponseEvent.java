@@ -35,6 +35,5 @@ public class OriginResponseEvent {
         private String timestamp;
         private String expiryTime;
     }
-
 }
 
