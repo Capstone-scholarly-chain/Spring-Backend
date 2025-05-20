@@ -1,4 +1,4 @@
-package Baeksa.money.global.redis;
+package Baeksa.money.global.config;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,12 +11,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.data.redis.connection.stream.MapRecord;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.GenericToStringSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.data.redis.stream.StreamMessageListenerContainer;
+import org.springframework.data.redis.stream.StreamMessageListenerContainer.StreamMessageListenerContainerOptions;
+
+import java.time.Duration;
 
 @Configuration
 @RequiredArgsConstructor
@@ -49,6 +54,23 @@ public class RedisConfig {
         return factory;
     }
 
+//    @Bean
+//    public StreamMessageListenerContainer<String, MapRecord<String, Object, Object>>
+//    streamMessageListenerContainer(RedisConnectionFactory connectionFactory) {
+//
+//        StreamMessageListenerContainerOptions<String, MapRecord<String, Object, Object>> options =
+//                StreamMessageListenerContainerOptions.builder()
+//                        .pollTimeout(Duration.ofSeconds(2)) // 블로킹 대기 시간
+//                        .targetType(MapRecord.class)       // 메시지 타입
+//                        .build();
+//
+//        StreamMessageListenerContainer<String, MapRecord<String, Object, Object>> container =
+//                StreamMessageListenerContainer.create(connectionFactory, options);
+//
+//        container.start(); // 꼭 시작해야 함!
+//        return container;
+//    }
+
     // RedisTemplate 설정
     @Primary
     @Bean
@@ -63,6 +85,17 @@ public class RedisConfig {
         redisTemplate.setHashValueSerializer(serializer);
         return redisTemplate;
     }
+
+//    @Bean(name = "customStringRedisTemplate")
+//    public RedisTemplate<String, String> stringRedisTemplate(RedisConnectionFactory connectionFactory) {
+//        RedisTemplate<String, String> redisTemplate = new RedisTemplate<>();
+//        redisTemplate.setConnectionFactory(connectionFactory);
+//        redisTemplate.setKeySerializer(new StringRedisSerializer());
+//        redisTemplate.setValueSerializer(new StringRedisSerializer());
+//        redisTemplate.setHashKeySerializer(new StringRedisSerializer());
+//        redisTemplate.setHashValueSerializer(new StringRedisSerializer());
+//        return redisTemplate;
+//    }
 
     @Bean
     public RedisTemplate<String, Long> redisTemplateLong(RedisConnectionFactory connectionFactory) {
