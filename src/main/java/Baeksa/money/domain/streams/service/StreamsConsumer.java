@@ -1,44 +1,88 @@
-//package Baeksa.money.domain.streams;
-//
-//import io.lettuce.core.api.async.RedisAsyncCommands;
-//import io.lettuce.core.codec.StringCodec;
-//import io.lettuce.core.output.StatusOutput;
-//import io.lettuce.core.protocol.CommandArgs;
-//import io.lettuce.core.protocol.CommandType;
-//import io.lettuce.core.protocol.CommandKeyword;
-//import lombok.RequiredArgsConstructor;
-//import lombok.extern.slf4j.Slf4j;
-//import org.springframework.beans.factory.DisposableBean;
-//import org.springframework.beans.factory.InitializingBean;
-//import org.springframework.data.redis.connection.stream.Consumer;
-//import org.springframework.data.redis.connection.stream.MapRecord;
-//import org.springframework.data.redis.connection.stream.ReadOffset;
-//import org.springframework.data.redis.connection.stream.StreamOffset;
-//import org.springframework.data.redis.core.RedisTemplate;
-//import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer;
-//import org.springframework.data.redis.stream.StreamListener;
-//import org.springframework.data.redis.stream.StreamMessageListenerContainer;
-//import org.springframework.data.redis.stream.Subscription;
-//import org.springframework.stereotype.Component;
-//
-//import java.time.Duration;
-//
-//@Slf4j
-//@Component
-//@RequiredArgsConstructor
-//public class StreamsConsumer implements StreamListener<String, MapRecord<String, Object, Object>>,
+package Baeksa.money.domain.streams.service;
+
+import Baeksa.money.domain.streams.service.StreamsService;
+import io.lettuce.core.api.async.RedisAsyncCommands;
+import io.lettuce.core.codec.StringCodec;
+import io.lettuce.core.output.StatusOutput;
+import io.lettuce.core.protocol.CommandArgs;
+import io.lettuce.core.protocol.CommandType;
+import io.lettuce.core.protocol.CommandKeyword;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.data.redis.connection.stream.*;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer;
+import org.springframework.data.redis.stream.StreamListener;
+import org.springframework.data.redis.stream.StreamMessageListenerContainer;
+import org.springframework.data.redis.stream.Subscription;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
+import java.time.Duration;
+import java.util.List;
+
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class StreamsConsumer {
+//        implements StreamListener<String, MapRecord<String, Object, Object>>,
 //        InitializingBean, DisposableBean {
-//
-//
+
+
 //    private final StreamMessageListenerContainer<String,
 //            MapRecord<String, Object, Object>> listenerContainer;
-//    private Subscription subscription;
-////    private String streamKey;
-////    private String consumerGroupName;
-////    private String consumerName;
-//    private final RedisOperator redisOperator;
-//    private RedisTemplate<String, Object> redisTemplate;
-//
+//    private final Subscription subscription;
+    private final StringRedisTemplate stringRedisTemplate;
+    private final RedisTemplate<String, String> redisTemplate;
+    private final StreamClaudeService streamsClaudeService;
+
+    private static final String STREAM_KEY = "RESPONSE_STREAM";
+    private static final String GROUP_NAME = "spring-consumer-group";
+    private static final String CONSUMER_NAME = "consumer-1";
+
+
+    @Scheduled(fixedDelay = 1000)
+    public void pollResponseStream() {
+        List<MapRecord<String, Object, Object>> messages = stringRedisTemplate
+                .opsForStream()
+                .read(Consumer.from("group", "consumer"),
+                        StreamReadOptions.empty().count(10).block(Duration.ofSeconds(2)),
+                        StreamOffset.create("RESPONSE_STREAM", ReadOffset.lastConsumed()));
+
+
+        if (messages == null) return;
+
+        for (MapRecord<String, Object, Object> record : messages) {
+            try {
+                String requestId = (String) record.getValue().get("requestId");
+                String payload = (String) record.getValue().get("payload");
+                String status = (String) record.getValue().get("status"); // "ACK", "FAIL", "DONE"
+
+                log.info("📩 Received from RESPONSE_STREAM: id={}, status={}, payload={}", requestId, status, payload);
+
+                if ("ACK".equalsIgnoreCase(status)) {
+                    streamsClaudeService.handleAck(requestId);
+                } else if ("DONE".equalsIgnoreCase(status)) {
+                    streamsClaudeService.handleResponse(requestId, payload);
+                } else if ("FAIL".equalsIgnoreCase(status)) {
+                    streamsClaudeService.handleFailure(requestId, payload);
+                }
+
+                // 메시지 처리 완료 후 ACK
+                stringRedisTemplate.opsForStream().acknowledge(STREAM_KEY, GROUP_NAME, record.getId());
+
+            } catch (Exception e) {
+                log.error("❌ Failed to process RESPONSE_STREAM record", e);
+            }
+        }
+    }
+}
+
+
+    //    private final RedisOperator redisOperator;
 //    public static final String NUMBER_KEY = "number";
 //    public static final String LAST_RESULT_HASH_KEY = "last_result";
 //    public static final String PROCESSED_HASH_KEY = "processed";
@@ -50,6 +94,8 @@
 //    private final String consumerName = "stream-test-reader";
 //    private final String consumerGroupName = "stream-test";
 //
+ //스케줄링을 하게 되면 메세지가 없을때도 지속적으로 redis에 접속해서 리소스 낭비
+//onMessage의 경우 메시지가 오면 자동으로 콜백 방식으로 수신 처리
 //    @Override
 //    public void onMessage(MapRecord<String, Object, Object> message) {
 //        /// //////복붙

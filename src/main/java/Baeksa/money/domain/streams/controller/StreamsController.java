@@ -1,16 +1,17 @@
-package Baeksa.money.domain.streams;
+package Baeksa.money.domain.streams.controller;
 
-import Baeksa.money.domain.auth.Dto.MemberDto;
-import Baeksa.money.domain.auth.Service.AuthService;
-import Baeksa.money.global.config.swagger.ApiErrorCodeExample;
+import Baeksa.money.domain.streams.service.StreamClaudeService;
+import Baeksa.money.domain.streams.service.StreamsProducer;
+import Baeksa.money.domain.streams.service.StreamsService;
+import Baeksa.money.domain.streams.dto.StreamReqDto;
+import Baeksa.money.global.excepction.CustomException;
 import Baeksa.money.global.excepction.code.BaseApiResponse;
 import Baeksa.money.global.excepction.code.ErrorCode;
 import com.fasterxml.jackson.core.type.TypeReference;
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.connection.stream.RecordId;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -48,48 +49,24 @@ public class StreamsController {
 //    }
 
 
-//    @PostMapping("/signup-test")
-//    public ResponseEntity<?> test(@RequestBody String message) {
-//
-//        streamsService.test(message);
-//        return ResponseEntity.ok(new BaseApiResponse<>(200, "test", "test 완료", null));
-//    }
-
-//    @PostMapping("/signup-test")
-//    public ResponseEntity<?> test(@RequestBody Map<String, String> requestBody) {
-//        String message = requestBody.get("message");
-//        streamsService.test(message);
-//        return ResponseEntity.ok(new BaseApiResponse<>(200, "test", "test 완료", null));
-//    }
-
     @PostMapping("/signup-test")
-    public ResponseEntity<?> test(@RequestBody(required = false) Map<String, String> requestBody) {
-        String message = (requestBody != null && requestBody.get("message") != null)
-                ? requestBody.get("message") : "default message";
-
-        streamsProducer.publishSignup2(message);
-        return ResponseEntity.ok(new BaseApiResponse<>(200, "test", "test 완료", null));
+    public ResponseEntity<?> test(@RequestBody String message) {
+        RecordId recordId = streamsProducer.publishSignup2(message);
+        return ResponseEntity.ok(new BaseApiResponse<>(200, "test", "test 완료", recordId));
     }
 
     @PostMapping("/process")
-    public ResponseEntity<?> processRequest(@RequestBody Map<String, Object> requestBody) {
+    public ResponseEntity<?> processRequest(@RequestBody StreamReqDto.StreamTestDto dto) {
         try {
             // Nest.js 서비스에 요청 전송 및 응답 대기
-            CompletableFuture<Map<String, Object>> responseFuture =
-                    streamService.processRequest(requestBody, new TypeReference<Map<String, Object>>() {});
-
+            CompletableFuture<StreamReqDto.StreamTestDto> responseFuture =
+                    streamService.processRequest(dto, new TypeReference<StreamReqDto.StreamTestDto>() {});
             // 비동기 응답 처리
-            return ResponseEntity.ok(
-                    responseFuture.thenApply(response ->
-                            new BaseApiResponse<>(200, "Success", "Request processed successfully", response)
-                    ).get(30, TimeUnit.SECONDS)  // 최대 30초 대기
-            );
+            StreamReqDto.StreamTestDto response = responseFuture.get(30, TimeUnit.SECONDS);
+            return ResponseEntity.ok(new BaseApiResponse<>(200, "Success", "Request processed successfully", response));
 
         } catch (Exception e) {
-            log.error("Failed to process request", e);
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new BaseApiResponse<>(500, "Error", "Failed to process request: " + e.getMessage(), null));
+            throw new CustomException(ErrorCode.STREAMS_SEND_FAIL);
         }
     }
 
@@ -101,7 +78,8 @@ public class StreamsController {
             String requestId = UUID.randomUUID().toString();
 
             // 비동기적으로 요청 처리
-            streamService.processRequest(requestBody, new TypeReference<Map<String, Object>>() {})
+            streamService.processRequest(requestBody, new TypeReference<Map<String, Object>>() {
+                    })
                     .thenAccept(response -> {
                         log.info("✅ Async request {} completed with response: {}", requestId, response);
                         // 여기에서 웹소켓이나 서버-센트 이벤트로 클라이언트에게 알림을 보낼 수 있음
@@ -117,9 +95,7 @@ public class StreamsController {
 
         } catch (Exception e) {
             log.error("Failed to accept request", e);
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new BaseApiResponse<>(500, "Error", "Failed to accept request: " + e.getMessage(), null));
+            throw new CustomException(ErrorCode.STREAMS_SEND_FAIL);
         }
     }
 

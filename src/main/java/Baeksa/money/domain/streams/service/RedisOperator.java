@@ -1,4 +1,4 @@
-package Baeksa.money.domain.streams;
+package Baeksa.money.domain.streams.service;
 
 
 import lombok.RequiredArgsConstructor;

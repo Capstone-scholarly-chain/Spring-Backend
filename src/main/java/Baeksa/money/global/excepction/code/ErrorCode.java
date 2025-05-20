@@ -108,7 +108,12 @@ public enum ErrorCode implements BaseErrorCode {
 
     //fcm
     FCM_SEND_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "FCM_001", "FCM 알림 전송 실패"),
-    FCMTOKEN_NOTFOUND(HttpStatus.NOT_FOUND, "FCM_002", "fcmToken이 없습니다.");
+    FCMTOKEN_NOTFOUND(HttpStatus.NOT_FOUND, "FCM_002", "fcmToken이 없습니다."),
+
+
+
+    // redis streams
+    STREAMS_SEND_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "STREAMS_001", "스트림 전송 실패.");
 
 
 
