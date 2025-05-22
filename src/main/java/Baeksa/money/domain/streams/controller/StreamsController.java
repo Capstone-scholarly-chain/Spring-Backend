@@ -1,8 +1,6 @@
 package Baeksa.money.domain.streams.controller;
 
 //import Baeksa.money.domain.streams.service.StreamClaudeService;
-import Baeksa.money.domain.streams.service.StreamsProducer;
-import Baeksa.money.domain.streams.service.StreamsService;
 import Baeksa.money.domain.streams.dto.StreamReqDto;
 import Baeksa.money.domain.streams.service.github.RedisStreamProducer;
 import Baeksa.money.global.excepction.CustomException;
@@ -33,9 +31,6 @@ import java.util.concurrent.TimeUnit;
 @Tag(name = "Auth", description = "회원가입 & 로그인 관련 API")
 public class StreamsController {
 
-    private final StreamsService streamsService;
-    private final StreamsProducer streamsProducer;
-//    private final StreamClaudeService streamService;
     private final RedisStreamProducer redisStreamProducer;
 
 //    @Operation(summary = "stream Test 회원가입 API")
@@ -60,7 +55,7 @@ public class StreamsController {
     @PostMapping("/signup-test")
     public ResponseEntity<?> test(@RequestBody StreamReqDto.StreamTestDto dto) {
         RecordId recordId = redisStreamProducer.sendMessage(dto);
-        return ResponseEntity.ok(new BaseApiResponse<>(200, "test", "test 완료", recordId));
+        return ResponseEntity.ok(new BaseApiResponse<>(200, "test", "test 완료", recordId.getValue()));
     }
 
 //    @PostMapping("/process")

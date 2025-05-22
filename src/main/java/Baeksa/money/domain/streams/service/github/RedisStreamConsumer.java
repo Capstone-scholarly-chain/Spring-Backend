@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 import java.time.Duration;
 import java.util.Map;
 
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -27,20 +28,25 @@ public class RedisStreamConsumer implements StreamListener<String, MapRecord<Str
     private StreamMessageListenerContainer<String, MapRecord<String, String, String>> listenerContainer;
     private Subscription subscription;
 
-//    private String streamKey;
-//    private String consumerGroupName;
-//    private String consumerName;
-
     private final RedisOperator redisOperator;
     private final ObjectMapper objectMapper;
 
-    private final String streamKey = "stream-test";
-    // 요청 스트림과 응답 스트림
-    private final String REQUEST_STREAM = "spring-to-nest-stream";
-    private final String RESPONSE_STREAM = "nest-to-spring-stream";
 
-    private static final String RESPONSE_GROUP_NAME = "nest-response-group";
-    private static final String CONSUMER_NAME = "nest-consumer";
+//    private final String streamKey = "spring-nestjs-requests";
+//    // 요청 스트림과 응답 스트림
+//    private final String REQUEST_STREAM = "spring-to-nest-stream";
+//    private final String RESPONSE_STREAM = "nest-to-spring-stream";
+//
+//    private static final String RESPONSE_GROUP_NAME = "nest-response-group";
+//    private static final String CONSUMER_NAME = "nest-consumer";
+
+    private static final String SPRING_TO_NESTJS_STREAM = "spring-nestjs-requests";
+    private static final String NESTJS_TO_SPRING_STREAM = "nestjs-spring-responses";
+    private static final String NESTJS_CONSUMER_GROUP = "nest-consumer-group";    // NestJS와 동일
+    private static final String NESTJS_CONSUMER_NAME = "nest-consumer";           // NestJS와 동일
+    private static final String SPRING_CONSUMER_GROUP = "spring-consumer-group";  // Spring 전용
+    private static final String SPRING_CONSUMER_NAME = "spring-consumer";
+
 
     private static final Map<String, Class<?>> dtoTypeMap = Map.of(
             "StreamTestDto", StreamReqDto.StreamTestDto.class
@@ -52,8 +58,9 @@ public class RedisStreamConsumer implements StreamListener<String, MapRecord<Str
         switch (type) {
             case "StreamTestDto" -> {
                 StreamReqDto.StreamTestDto DTO = (StreamReqDto.StreamTestDto) dto;
-                log.info("DTO id: {}", DTO.getRequestId());
-                log.info("DTO message: {}", DTO.getMessage());
+                log.info("DTO id: {}", DTO.getUserId());
+                log.info("DTO message: {}", DTO.getTheme());
+                log.info("DTO: {}", DTO);
             }
 //            case "PaymentEvent" -> {
 //                PaymentEvent payment = (PaymentEvent) dto;
@@ -71,14 +78,7 @@ public class RedisStreamConsumer implements StreamListener<String, MapRecord<Str
 
         Map<String, String> value = message.getValue();
 
-//        // 더미 메시지 스킵
-//        if ("true".equals(value.get("init"))) {
-//            log.debug("🔧 Skipping init message: {}", message.getId());
-//            // ACK만 하고 리턴
-//            this.redisOperator.ackStream(RESPONSE_GROUP_NAME, message);
-//            return;
-//        }
-        log.info("[ message ]: {}", message);
+        log.info("[ Consumer 리딩중 ]:");
         log.info("[ Stream ]: {}", message.getStream());
         log.info("[ recordId ]: {}", message.getId());
         log.info("[ messageValue ]: {}", message.getValue());
@@ -101,7 +101,7 @@ public class RedisStreamConsumer implements StreamListener<String, MapRecord<Str
 
         // 이후, ack stream
         /// //////////////////////아래 나중에 바꿀것
-        this.redisOperator.ackStream(RESPONSE_GROUP_NAME, message);
+        this.redisOperator.ackStream(NESTJS_CONSUMER_NAME, message);
     }
 
 
@@ -119,20 +119,20 @@ public class RedisStreamConsumer implements StreamListener<String, MapRecord<Str
     public void afterPropertiesSet() throws Exception {
 
         // Consumer Group 설정
-        this.redisOperator.createStreamConsumerGroup(streamKey, RESPONSE_GROUP_NAME);
+        this.redisOperator.createStreamConsumerGroup(NESTJS_TO_SPRING_STREAM, SPRING_CONSUMER_GROUP);
 
         // StreamMessageListenerContainer 설정
         this.listenerContainer = this.redisOperator.createStreamMessageListenerContainer();
 
         //Subscription 설정
         this.subscription = this.listenerContainer.receive(
-                Consumer.from(this.RESPONSE_GROUP_NAME, CONSUMER_NAME), //누가 읽을지
-                StreamOffset.create(streamKey, ReadOffset.lastConsumed()),
+                Consumer.from(this.SPRING_CONSUMER_GROUP, SPRING_CONSUMER_NAME), //누가 읽을지
+                StreamOffset.create(NESTJS_TO_SPRING_STREAM, ReadOffset.lastConsumed()),
                 //어떤 스트림을 어디서부터 읽을지
                 this
         );
 
-        log.info("streamKey {}: {}", streamKey);
+        log.info("streamKey {}: {}", NESTJS_TO_SPRING_STREAM);
 
         // 2초 마다, 정보 GET
         this.subscription.await(Duration.ofSeconds(2));

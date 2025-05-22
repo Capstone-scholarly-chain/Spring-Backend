@@ -12,7 +12,10 @@ public class StreamReqDto {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class StreamTestDto{
-        private String message;
-        private String requestId;
+        private String userId;
+        private String theme;
+        private String amount;
+        private String description;
+        private String documentURL;
     }
 }
