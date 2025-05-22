@@ -13,6 +13,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Component
@@ -24,6 +26,8 @@ public class StreamsProducer {
     private final StringRedisTemplate stringRedisTemplate;
     private final ObjectMapper objectMapper;
     private final String streamKey = "stream-test";
+    private final String REQUEST_STREAM = "spring-to-nest-stream";
+
 
     // StreamsProducer 클래스의 초기화 메소드
     @PostConstruct
@@ -46,20 +50,50 @@ public class StreamsProducer {
         }
     }
 
-    public RecordId testAddMessage() {
-        try {
-            Map<String, String> data = new HashMap<>();
-            data.put("test", "value");
+    public RecordId testAddMessage(Object requestData) {
 
-            StringRecord record = StreamRecords.string(data).withStreamKey(streamKey);
+        String requestId = UUID.randomUUID().toString();
+
+        try {
+            log.info("🚀 Processing client request with ID: {}", requestId);
+
+            // 요청 데이터 준비
+            // recordId는 스트림 내부id이고 nest.js는 알 수 없음.
+            // requestId의 경우 응답 매칭을 위한 추적 ID임. nest.js가 알 수 있음
+            Map<String, String> data = new HashMap<>();
+//            data.put("requestId", requestId);
+            data.put("DtoType", requestData.getClass().getName());
+            data.put("payload", objectMapper.writeValueAsString(requestData));
+//            data.put("timestamp", String.valueOf(System.currentTimeMillis()));
+//            data.put("status", Status.SUCCESS.name()); //테스트용, 나중엔 보낼때 뺴야됨
+            log.info("data: {}", data);
+
+
+            // Redis Stream에 요청 메시지 발행
+            StringRecord record = StreamRecords.string(data).withStreamKey(REQUEST_STREAM);
             RecordId recordId = stringRedisTemplate.opsForStream().add(record);
-            log.info("✅ recordId: {}", recordId);
+            log.info("✅ Request sent to Nest.js via stream: {}, ID: {}", requestId, recordId);
             return recordId;
         } catch (Exception e) {
             log.error("❌ Failed to add message to stream: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to add message to Redis Stream: " + e.getMessage(), e);
         }
     }
+
+//    public RecordId testAddMessage() {
+//        try {
+//            Map<String, String> data = new HashMap<>();
+//            data.put("test", "value");
+//
+//            StringRecord record = StreamRecords.string(data).withStreamKey(streamKey);
+//            RecordId recordId = stringRedisTemplate.opsForStream().add(record);
+//            log.info("✅ recordId: {}", recordId);
+//            return recordId;
+//        } catch (Exception e) {
+//            log.error("❌ Failed to add message to stream: {}", e.getMessage(), e);
+//            throw new RuntimeException("Failed to add message to Redis Stream: " + e.getMessage(), e);
+//        }
+//    }
 
     public RecordId publishSignup2(String message) {
         try {
