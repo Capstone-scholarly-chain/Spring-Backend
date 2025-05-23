@@ -54,7 +54,7 @@ public class StreamsController {
 
     @PostMapping("/signup-test")
     public ResponseEntity<?> test(@RequestBody StreamReqDto.StreamTestDto dto) {
-        RecordId recordId = redisStreamProducer.sendMessage(dto);
+        RecordId recordId = redisStreamProducer.sendMessage(dto, "TEST_REQUEST");
         return ResponseEntity.ok(new BaseApiResponse<>(200, "test", "test 완료", recordId.getValue()));
     }
 

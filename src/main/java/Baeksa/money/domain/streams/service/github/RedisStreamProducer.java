@@ -36,13 +36,13 @@ public class RedisStreamProducer {
     private static final String SPRING_CONSUMER_NAME = "spring-consumer";
 
 
-    public RecordId sendMessage(Object requestData) {
+    public RecordId sendMessage(Object requestData, String requestType) {
         try {
             log.info("🚀 Processing sendMessage");
             /// String, String에 유의하기 !!!!
             Map<String, String> data = new HashMap<>();
 //            data.put("DtoType", requestData.getClass().getSimpleName());    //getName()으로 하면 패키지부터 띄움
-            data.put("requestType", "TEST_REQUEST");    //getName()으로 하면 패키지부터 띄움
+            data.put("requestType", requestType);    //getName()으로 하면 패키지부터 띄움
             data.put("data", objectMapper.writeValueAsString(requestData));
             data.put("timestamp", String.valueOf(System.currentTimeMillis()));
 
