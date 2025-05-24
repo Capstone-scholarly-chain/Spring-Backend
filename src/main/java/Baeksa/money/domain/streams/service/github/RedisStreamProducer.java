@@ -36,6 +36,7 @@ public class RedisStreamProducer {
     private static final String SPRING_CONSUMER_NAME = "spring-consumer";
 
 
+    //requestData에 Dto를 넘김
     public RecordId sendMessage(Object requestData, String requestType) {
         try {
             log.info("🚀 Processing sendMessage");

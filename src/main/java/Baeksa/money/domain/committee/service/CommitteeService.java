@@ -90,7 +90,7 @@ public class CommitteeService {
             Integer count = (countStr != null) ? Integer.parseInt(countStr) : null;
             if (count == null) {
                 log.warn("학생회 조직원 수 응답 후에도 값이 없음: {}", requestId);
-                throw new CustomException(ErrorCode.STUDENT_COUNT_NOT_AVAILABLE);
+                throw new CustomException(ErrorCode.COUNCIL_COUNT_REQUEST_FAILED);
             }
 
             log.debug("학생회 조직원 수 조회 성공: {}", count);

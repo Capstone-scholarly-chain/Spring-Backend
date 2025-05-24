@@ -4,6 +4,8 @@ import Baeksa.money.domain.auth.Dto.MemberDto;
 import Baeksa.money.domain.auth.Entity.MemberEntity;
 import Baeksa.money.domain.auth.converter.MemberConverter;
 import Baeksa.money.domain.auth.enums.Role;
+import Baeksa.money.domain.streams.dto.StreamReqDto;
+import Baeksa.money.domain.streams.service.github.RedisStreamProducer;
 import Baeksa.money.global.excepction.CustomException;
 import Baeksa.money.global.excepction.code.BaseApiResponse;
 import Baeksa.money.global.excepction.code.ErrorCode;
@@ -38,7 +40,7 @@ public class AuthService {
     private final MemberService memberService;
     private final StudentValidService studentValidService;
     private final MemberConverter memberConverter;
-    private final AuthPublisher authPublisher;
+    private final RedisStreamProducer redisStreamProducer;
 
     public MemberDto.MemberResponseDto signup(MemberDto memberDto) {
 
@@ -59,10 +61,13 @@ public class AuthService {
 
             //savedEntity를 MemberDto로 변환하여 반환해야됨(컨트롤러니깐)
             MemberDto.MemberResponseDto savedDto = memberConverter.toResponseDto(savedEntity);
-            log.info("savedDto: {}", savedDto.getStudentId());
-            log.info("memberDto: {}", memberDto.getStudentId());
+//            log.info("savedDto: {}", savedDto.getStudentId());
+//            log.info("memberDto: {}", memberDto.getStudentId());
+//
+//            authPublisher.publishSignup(studentId, username, role);
 
-            authPublisher.publishSignup(studentId, username, role);
+            StreamReqDto.RegisterUserDto userDto = new StreamReqDto.RegisterUserDto(savedDto.getStudentId(), savedDto.getUsername(), savedDto.getRole().name());
+            redisStreamProducer.sendMessage(userDto, "REGISTER_USER");
 
             return savedDto;
 
@@ -165,12 +170,10 @@ public class AuthService {
 
     public String extractAccessFromHeader(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
-        log.info("authHeader1: {}", authHeader);
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            log.info("authHeader2: {}", authHeader);
             return authHeader.substring(7); // "Bearer " 이후의 실제 토큰 값
         }
-        log.info("authHeader3: {}", authHeader);
+        log.info("[ authHeader ]: {}", authHeader);
         return null;
     }
 }

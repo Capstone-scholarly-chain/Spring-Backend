@@ -46,7 +46,7 @@ public class StudentController {
                                     @RequestBody StudentDto.LedgerDto ledgerDto){
 
         Map<String, Object> map = studentPublisher.applyLedger(userDetails.getStudentId(), ledgerDto);
-        return ResponseEntity.ok(new BaseApiResponse<>(200, "PUBSUB-LEDGER", "학생 입금 기입 요청", map));
+        return ResponseEntity.ok(new BaseApiResponse<>(200, "STUDENT_APPLY_LEDGER", "학생 입금 기입 요청", map));
     }
 
     @ApiErrorCodeExample(value = ErrorCode.class, include = {"STUDENT_APPROVE_WITHDRAW"})
@@ -56,7 +56,7 @@ public class StudentController {
                                      @RequestBody StudentDto.VoteDto dto){
 
         Map<String, Object> map = studentPublisher.voteWithdraw(userDetails.getStudentId(), dto);
-        return ResponseEntity.ok(new BaseApiResponse<>(200, "VOTE-WITHDRAW", "출금 기입 투표 승인/거절", map));
+        return ResponseEntity.ok(new BaseApiResponse<>(200, "STUDENT_VOTE_WITHDRAW", "출금 기입 투표 승인/거절", map));
     }
 
 //    @ApiErrorCodeExample(value = ErrorCode.class, include = {"STUDENT_REJECT_WITHDRAW"})
@@ -72,7 +72,7 @@ public class StudentController {
 
     @ApiErrorCodeExample(value = ErrorCode.class, include = {""})
     @Operation(summary = "학생 수 조회")
-    @GetMapping("/student-count")
+    @GetMapping("/counts")
     public ResponseEntity<?> getStudentCount(){
 
         int count = studentService.findStudentCount();

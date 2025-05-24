@@ -81,4 +81,49 @@ public class StreamReqDto {
         private String processingTime;
         private String timestamp;
     }
+
+    /// ////////////////////////////////////////////////
+
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class streamApproveDto {
+        private String approverId;
+        private String requestId;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class streamRejectDto {
+        private String rejectorId;
+        private String requestId;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class streamLedgerDto {
+        private String userId;
+        private String theme;
+        private Long amount;
+        private String description;
+        private String documentURL;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class streamLedgerApproveDto {
+        private String approverId;
+        private String ledgerEntryId;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class streamLedgerRejectDto {
+        private String rejectorId;
+        private String ledgerEntryId;
+    }
 }

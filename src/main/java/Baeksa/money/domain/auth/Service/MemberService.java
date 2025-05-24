@@ -5,6 +5,7 @@ import Baeksa.money.domain.auth.Dto.MemberDto;
 import Baeksa.money.domain.auth.Entity.MemberEntity;
 import Baeksa.money.domain.auth.Repository.MemberRepository;
 import Baeksa.money.domain.auth.converter.MemberConverter;
+import Baeksa.money.domain.auth.enums.Role;
 import Baeksa.money.global.excepction.CustomException;
 import Baeksa.money.global.excepction.code.ErrorCode;
 import Baeksa.money.global.jwt.JWTUtil;
@@ -12,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -78,5 +80,9 @@ public class MemberService {
         Optional<MemberEntity> Op = memberRepository.findByStudentId(studentId);
         MemberEntity member = Op.get();
         member.reject();
+    }
+
+    public List<String> getUserIdsByRole(Role role){
+        return memberRepository.findUserIdsByRole(role);
     }
 }

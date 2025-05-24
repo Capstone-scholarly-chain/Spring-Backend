@@ -106,6 +106,14 @@ public class RedisStreamConsumer implements StreamListener<String, MapRecord<Str
         try {
             // result를 JSON으로 파싱하여 상세 데이터 추출
             Map<String, Object> resultData = objectMapper.readValue(result, Map.class);
+//
+//            // NestJS에서 오는 공통 응답 구조 파싱
+//            Boolean success = (Boolean) resultData.get("success");
+//            String message = (String) resultData.get("message");
+//            String ledgerEntryId = (String) resultData.get("ledgerEntryId");
+//            String requestId = (String) resultData.get("requestId");
+//            String requestStatus = (String) resultData.get("requestStatus");
+//
 
             switch (requestType) {
                 case "TEST_REQUEST" -> {

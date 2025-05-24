@@ -33,7 +33,7 @@ public class ErrorSubscriber implements MessageListener {
         requestTypeHandlerMap.put("PENDING_MEMBERSHIP", this::handleMembershipPendingError);
         requestTypeHandlerMap.put("GET_MEMBERSHIP_STATUS", this::handleMemberShipStatusError);
         requestTypeHandlerMap.put("STUDENT_COUNT", this::handleStudentCountError);
-        requestTypeHandlerMap.put("STUDENT_COUNCIL_COUNT", this::handleStudentCouncilCountError);
+        requestTypeHandlerMap.put("STUDENT_COUNCIL_COUNT", this::handleCouncilCountError);
         requestTypeHandlerMap.put("ADD_DEPOSIT", this::handleAddDepositError);
         requestTypeHandlerMap.put("ADD_WITHDRAW", this::handleAddWithdrawError);
         requestTypeHandlerMap.put("DEPOSIT_APPROVE", this::handleDepositApproveError);
@@ -112,8 +112,8 @@ public class ErrorSubscriber implements MessageListener {
         throw new CustomException(ErrorCode.STUDENT_COUNT_REQUEST_FAILED);
     }
 
-    private void handleStudentCouncilCountError(Map<String, Object> stringObjectMap) {
-        throw new CustomException(ErrorCode.STUDENT_COUNCIL_COUNT_REQUEST_FAILED);
+    private void handleCouncilCountError(Map<String, Object> stringObjectMap) {
+        throw new CustomException(ErrorCode.COUNCIL_COUNT_REQUEST_FAILED);
     }
 
     private void handleAddDepositError(Map<String, Object> stringObjectMap) {
