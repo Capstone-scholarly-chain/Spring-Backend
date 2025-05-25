@@ -58,7 +58,7 @@ public class LedgerPubService {
     }
 
     public void getThemeBalance() {
-        publish("spring:request:theme-balance", "테마 잔액 조회");
+        publish("spring:request:Theme-balance", "테마 잔액 조회");
     }
 
     public void getAllThemeBalance() {

@@ -38,7 +38,7 @@ public class StudentController {
 //        return ResponseEntity.ok(new BaseApiResponse<>(200, "PUBSUB-MEMBERSHIP", "학생 가입 신청", map));
 //    }
 
-    //프론트는 theme, amount, description, documentURL만 넘겨주면 됨
+    //프론트는 Theme, amount, description, documentURL만 넘겨주면 됨
     @Operation(summary = "학생이 입금 기입 요청을 보냄 - 학생 화면")
     @ApiErrorCodeExample(value = ErrorCode.class, include = {"STUDENT_NOTFOUND", "STUDENT_APPLY_LEDGER"})
     @PostMapping("/ledger")

@@ -5,9 +5,8 @@ import Baeksa.money.domain.auth.Entity.MemberEntity;
 import Baeksa.money.domain.auth.converter.MemberConverter;
 import Baeksa.money.domain.auth.enums.Role;
 import Baeksa.money.domain.streams.dto.StreamReqDto;
-import Baeksa.money.domain.streams.service.github.RedisStreamProducer;
+import Baeksa.money.domain.streams.service.RedisStreamProducer;
 import Baeksa.money.global.excepction.CustomException;
-import Baeksa.money.global.excepction.code.BaseApiResponse;
 import Baeksa.money.global.excepction.code.ErrorCode;
 import Baeksa.money.global.jwt.CustomUserDetails;
 import Baeksa.money.global.jwt.JWTUtil;
@@ -17,8 +16,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -26,8 +23,6 @@ import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
 
 @Slf4j
 @Service

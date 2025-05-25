@@ -73,7 +73,7 @@ public class LedgerService {
             //단일일때는 문자열로 json을 안하나봄
             // DTO를 JSON 문자열로 직렬화해서 Redis에 저장
             try {
-                redisTemplate.opsForValue().set("ledger:theme-balance:" + theme, json);
+                redisTemplate.opsForValue().set("ledger:Theme-balance:" + theme, json);
             } catch (Exception e) {
                 throw new CustomException(ErrorCode.ONE_THEME_BALANCE_REGISTER_FAILED);
             }
@@ -88,7 +88,7 @@ public class LedgerService {
         try {
             String json = objectMapper.writeValueAsString(balances);
             try {
-                redisTemplate.opsForValue().set("ledger:theme-balances", json);
+                redisTemplate.opsForValue().set("ledger:Theme-balances", json);
             } catch (Exception e) {
                 throw new CustomException(ErrorCode.ALL_THEME_BALANCE_FETCH_FAILED);
             }
@@ -151,7 +151,7 @@ public class LedgerService {
         try {
             String s;
             try {
-                s = redisTemplate.opsForValue().get("ledger:theme-balances");
+                s = redisTemplate.opsForValue().get("ledger:Theme-balances");
             } catch (Exception e) {
                 throw new CustomException(ErrorCode.TOTAL_BALANCE_FETCH_FAILED);
             }
@@ -270,7 +270,7 @@ public class LedgerService {
         try {
             String s ;
             try {
-                s = redisTemplate.opsForValue().get("ledger:theme-balance:" + theme);
+                s = redisTemplate.opsForValue().get("ledger:Theme-balance:" + theme);
             } catch (Exception e) {
                 throw new CustomException(ErrorCode.ONE_THEME_BALANCE_FETCH_FAILED);
             }

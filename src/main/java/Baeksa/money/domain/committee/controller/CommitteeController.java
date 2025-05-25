@@ -3,7 +3,7 @@ package Baeksa.money.domain.committee.controller;
 import Baeksa.money.domain.committee.dto.CommitteeDto;
 import Baeksa.money.domain.committee.service.CommitteeService;
 import Baeksa.money.domain.streams.dto.StreamReqDto;
-import Baeksa.money.domain.streams.service.github.RedisStreamProducer;
+import Baeksa.money.domain.streams.service.RedisStreamProducer;
 import Baeksa.money.domain.student.dto.StudentDto;
 import Baeksa.money.global.config.swagger.ApiErrorCodeExample;
 import Baeksa.money.global.excepction.code.BaseApiResponse;
@@ -19,7 +19,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
 //EXPIRED_TOKEN(HttpStatus.BAD_REQUEST, "JWT_001", "refreshToken이 만료되었습니다."),
 //INVALID_TOKEN(HttpStatus.BAD_REQUEST, "JWT_002", "refreshToken이 유효하지 않습니다."),
 //TOKEN_NOTFOUND(HttpStatus.NOT_FOUND, "JWT_003", "refreshToken이 없습니다."),
@@ -73,7 +72,7 @@ public class CommitteeController {
 //        Map<String, Object> result = committeePublisher.rejectStudent(userDetails.getStudentId(), streamRejectDto);
         RecordId recordId = redisStreamProducer.sendMessage(
                 new StreamReqDto.streamRejectDto(userDetails.getStudentId(), rejectDto.getRequestId()), "REJECT_MEMBERSHIP");
-        return ResponseEntity.ok(new BaseApiResponse<>(200, "REJECT_MEMBERSHIP", "학생회 가입 거절", recordId));
+        return ResponseEntity.ok(new BaseApiResponse<>(200, "REJECT_MEMBERSHIP", "학생회가 학생 가입 거절", recordId));
     }
 
 

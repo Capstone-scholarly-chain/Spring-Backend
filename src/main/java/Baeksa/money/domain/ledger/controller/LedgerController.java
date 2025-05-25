@@ -1,9 +1,12 @@
 package Baeksa.money.domain.ledger.controller;
 
+import Baeksa.money.domain.ledger.dto.ThemeReqDto;
+import Baeksa.money.domain.ledger.entity.Theme;
 import Baeksa.money.domain.ledger.service.LedgerPubService;
 import Baeksa.money.domain.ledger.service.LedgerService;
 import Baeksa.money.domain.ledger.dto.PendingDepositDto;
 import Baeksa.money.domain.ledger.dto.VoteDto;
+//import Baeksa.money.domain.ledger.service.ThemeService;
 import Baeksa.money.global.config.swagger.ApiErrorCodeExample;
 import Baeksa.money.global.excepction.code.BaseApiResponse;
 import Baeksa.money.global.excepction.code.ErrorCode;
@@ -16,41 +19,35 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
-@RequestMapping("/api/pubsub/ledger")
+@RequestMapping("/api/ledger")
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "Ledger관련 api")
 public class LedgerController {
 
     private final LedgerService ledgerService;
-    private final LedgerPubService ledgerPubService;
+//    private final LedgerPubService ledgerPubService;
+//    private final ThemeService themeService;
 
-    @Operation(summary = "pubsub test")
-    @GetMapping("/test")
-    public ResponseEntity<?> test(){
-        ledgerPubService.getTest();
-        return ResponseEntity.ok(new BaseApiResponse<>(200, "PUBSUB-REJECT", "학생회 가입 거절", null));
-    }
+//    @Operation(summary = "테마 생성")
+//    @PostMapping("/theme")
+//    public ResponseEntity<?> theme(@RequestBody ThemeReqDto.createThemeDto dto){
+//
+//        Theme theme = themeService.create(dto.getThemeName(), dto.getYear(), dto.isSemester());
+//        return ResponseEntity.ok(new BaseApiResponse<>(201, "GET-DEPOSITS",
+//                "대기중인 입금 항목 조회", theme));
+//    }
 
-    //내가 키 쪼회하고 3초 기다리는
-//    @Operation(summary = "조회 test")
-//    @GetMapping("/test2")
-//    public ResponseEntity<?> test2(){
-//        ledgerService.
-//        return ResponseEntity.ok(new BaseApiResponse<>(200, "PUBSUB-REJECT", "학생회 가입 거절", null));
+//    @Operation(summary = "테마 생성")
+//    @PostMapping("/theme")
+//    public ResponseEntity<?> getTheme(@RequestParam ThemeReqDto.createThemeDto dto){
+//
+//        Theme theme = themeService.getTheme(dto.getThemeName(), dto.getYear(), dto.isSemester());
+//        return ResponseEntity.ok(new BaseApiResponse<>(201, "GET-DEPOSITS",
+//                "대기중인 입금 항목 조회", theme));
 //    }
 
 
-//    VOTE_REGISTER_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "SUB_007", "투표 등록 실패"),
-//    ONE_THEME_BALANCE_REGISTER_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "SUB_008", "하나의 테마 잔액 등록 실패"),
-//    ALL_THEME_BALANCE_FETCH_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "SUB_009", "테마 잔액 등록 실패"),
-//
-//    DEPOSIT_CACHE_COMPLETE(HttpStatus.OK, "SUB_010", "입금 항목 캐싱 완료"),
-//    WITHDRAW_CACHE_COMPLETE(HttpStatus.OK, "SUB_011", "출금 항목 캐싱 완료"),
-//
-//    VOTE_STATUS_FETCH_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "SUB_012", "투표 현황 조회 실패"),
-//    ONE_THEME_BALANCE_FETCH_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "SUB_013", "하나의 테마 잔액 조회 실패"),
-//    TOTAL_BALANCE_FETCH_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "SUB_014", "전체 잔액 조회 실패"),
     @ApiErrorCodeExample(value = ErrorCode.class, include = {"PENDING_DEPOSIT_FETCH_FAILED"})
     @Operation(summary = "대기중인 입금 항목 조회")
     @GetMapping("/deposits")

@@ -1,4 +1,4 @@
-package Baeksa.money.domain.streams.service.github;
+package Baeksa.money.domain.streams.service;
 
 
 
@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 //import org.springframework.data.domain.Range;
 import org.springframework.data.domain.Range;
 import org.springframework.data.redis.connection.stream.*;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.data.redis.stream.StreamMessageListenerContainer;

@@ -1,7 +1,7 @@
-package Baeksa.money.domain.streams.service.github;
+package Baeksa.money.domain.streams.service;
 
 
-import Baeksa.money.domain.streams.dto.StreamReqDto;
+import Baeksa.money.domain.fcm.FcmService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,15 +30,7 @@ public class RedisStreamConsumer implements StreamListener<String, MapRecord<Str
 
     private final RedisOperator redisOperator;
     private final ObjectMapper objectMapper;
-
-
-//    private final String streamKey = "spring-nestjs-requests";
-//    // 요청 스트림과 응답 스트림
-//    private final String REQUEST_STREAM = "spring-to-nest-stream";
-//    private final String RESPONSE_STREAM = "nest-to-spring-stream";
-//
-//    private static final String RESPONSE_GROUP_NAME = "nest-response-group";
-//    private static final String CONSUMER_NAME = "nest-consumer";
+    private final FcmService fcmService;
 
     private static final String SPRING_TO_NESTJS_STREAM = "spring-nestjs-requests";
     private static final String NESTJS_TO_SPRING_STREAM = "nestjs-spring-responses";
@@ -120,24 +112,77 @@ public class RedisStreamConsumer implements StreamListener<String, MapRecord<Str
                     log.info("🧪 테스트 요청 성공");
                     log.info("   - 결과: {}", resultData);
                     log.info("   - 처리시간: {}ms", processingTime);
-                    // 필요시 추가 비즈니스 로직
+                    fcmService.sendMessageToUser("202210777", "알림", "보낸다");
+                    log.info("[ 알림 전송 성공 ]");
                 }
                 case "REGISTER_USER" -> {
-                    log.info("👤 사용자 등록 성공");
-                    log.info("   - 사용자ID: {}", resultData.get("userId"));
+                    log.info("학생 회원가입 및 조직 신청");
+                    String userId = resultData.get("userId").toString();
+                    log.info("   - 사용자ID: {}", userId);
                     log.info("   - 상태: {}", resultData.get("status"));
-                    // DB 업데이트, 알림 발송 등
+                    //        message: '입금 항목이 성공적으로 추가되었습니다',
+//                    fcmService.sendMessageToStudents(userId + "님", resultData.get("message").toString());
+                    fcmService.sendMessageToUser(userId, userId + " 님", "회원가입 및 조직 가입 요청이 신청되었습니다.");
+                    fcmService.sendMessageToCouncil("조직 가입 요청이 있습니다.", "학생 " + userId);
                 }
                 case "APPROVE_MEMBERSHIP" -> {
                     log.info("✅ 멤버십 승인 완료");
                     log.info("   - 결과: {}", resultData);
-                    // 승인 후처리 로직
+                    String userId = resultData.get("userId").toString();
+                    fcmService.sendMessageToUser(userId, userId + " 님", "조직 가입 요청이 승인되었습니다.");
                 }
                 case "REJECT_MEMBERSHIP" -> {
                     log.info("❌ 멤버십 거절 완료");
                     log.info("   - 결과: {}", resultData);
-                    // 거절 후처리 로직
+                    String userId = resultData.get("userId").toString();
+                    fcmService.sendMessageToUser(userId, userId + " 님", "조직 가입 요청이 거부되었습니다.");
                 }
+
+
+                case "STUDENT_APPLY_LEDGER" -> {
+                    log.info("학생 입금 내역 요청");
+                    log.info("   - 결과: {}", resultData);
+                    String userId = resultData.get("userId").toString();
+                    fcmService.sendMessageToUser(userId, userId + " 님", "입금 내역 등록이 신청되었습니다.");
+                    fcmService.sendMessageToCouncil("입금 내역 등록 신청이 있습니다.", "학생 " + userId);
+                }
+                case "COMMITTEE_APPROVE_DEPOSIT" -> {
+                    log.info("학생회가 입금 내역 승인");
+                    log.info("   - 결과: {}", resultData);
+                    String userId = resultData.get("userId").toString();
+                    //여기 userId가 학생인지 학생회인지
+                    fcmService.sendMessageToUser(userId, userId + " 님", "입금 내역 등록이 완료되었습니다.");
+                    fcmService.sendMessageToCouncil("입금 내역 등록 신청이 있습니다.", "학생 " + userId);
+                }
+                case "COMMITTEE_REJECT_DEPOSIT" -> {
+                    log.info("학생회가 입금 내역 거절");
+                    log.info("   - 결과: {}", resultData);
+                    String userId = resultData.get("userId").toString();
+                    fcmService.sendMessageToUser(userId, userId + " 님", "입금 내역 등록이 신청되었습니다.");
+                    fcmService.sendMessageToCouncil("입금 내역 등록 신청이 있습니다.", "학생 " + userId);
+                }
+
+
+                case "COMMITTEE_APPLY_WITHDRAW" -> {
+                    log.info("학생회 출금 기입 요청");
+                    log.info("   - 결과: {}", resultData);
+                    String userId = resultData.get("userId").toString();
+                    fcmService.sendMessageToUser(userId, userId + " 님", "출금 내역 등록이 신청되었습니다.");
+                    fcmService.sendMessageToStudents("학생회 " + userId + " 님의", "출금 내역 등록 신청이 있습니다.");
+                    fcmService.sendMessageToCouncil("학생회 " + userId + " 님의", "출금 내역 등록 신청이 있습니다.");
+                }
+                case "STUDENT_VOTE_WITHDRAW" -> {
+                    log.info("학생이 출금 승인 투표");
+                    log.info("   - 결과: {}", resultData);
+                    String userId = resultData.get("userId").toString();
+                    fcmService.sendMessageToUser(userId, userId + " 님", "출금 내역 투표가 신청되었습니다.");
+                    //투표는 결과를 보여주는 알림이 있으면 좋겠음
+                    //예) title:모군님, body:학생회 00출금 내역 투표 종료 10분 전입니다
+                    //title:학생회 00 출금 내역의 투표 결과입니다. body: 찬성 10명, 반대 15명
+                }
+
+
+
                 case "GET_STUDENT_COUNT", "GET_COUNCIL_COUNT", "GET_PENDING_REQUESTS" -> {
                     log.info("📊 조회 요청 완료: {}", requestType);
                     log.info("   - 결과: {}", resultData);

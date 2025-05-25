@@ -25,10 +25,7 @@ import java.time.Duration;
 
 @Configuration
 @RequiredArgsConstructor
-@EnableRedisRepositories(basePackages = {
-        "Baeksa.money.global.redis",
-//        "Baeksa.money.global.fcm"
-})
+@EnableRedisRepositories(basePackages = {"Baeksa.money.global.redis",})
 public class RedisConfig {
 
     @Value("${spring.data.redis.host}")
@@ -54,23 +51,6 @@ public class RedisConfig {
         return factory;
     }
 
-//    @Bean
-//    public StreamMessageListenerContainer<String, MapRecord<String, Object, Object>>
-//    streamMessageListenerContainer(RedisConnectionFactory connectionFactory) {
-//
-//        StreamMessageListenerContainerOptions<String, MapRecord<String, Object, Object>> options =
-//                StreamMessageListenerContainerOptions.builder()
-//                        .pollTimeout(Duration.ofSeconds(2)) // 블로킹 대기 시간
-//                        .targetType(MapRecord.class)       // 메시지 타입
-//                        .build();
-//
-//        StreamMessageListenerContainer<String, MapRecord<String, Object, Object>> container =
-//                StreamMessageListenerContainer.create(connectionFactory, options);
-//
-//        container.start(); // 꼭 시작해야 함!
-//        return container;
-//    }
-
     // RedisTemplate 설정
     @Primary
     @Bean
@@ -85,17 +65,6 @@ public class RedisConfig {
         redisTemplate.setHashValueSerializer(serializer);
         return redisTemplate;
     }
-
-//    @Bean(name = "customStringRedisTemplate")
-//    public RedisTemplate<String, String> stringRedisTemplate(RedisConnectionFactory connectionFactory) {
-//        RedisTemplate<String, String> redisTemplate = new RedisTemplate<>();
-//        redisTemplate.setConnectionFactory(connectionFactory);
-//        redisTemplate.setKeySerializer(new StringRedisSerializer());
-//        redisTemplate.setValueSerializer(new StringRedisSerializer());
-//        redisTemplate.setHashKeySerializer(new StringRedisSerializer());
-//        redisTemplate.setHashValueSerializer(new StringRedisSerializer());
-//        return redisTemplate;
-//    }
 
     @Bean
     public RedisTemplate<String, Long> redisTemplateLong(RedisConnectionFactory connectionFactory) {
@@ -128,40 +97,6 @@ public class RedisConfig {
         container.setConnectionFactory(connectionFactory);
         return container;
     }
-
-//    @Bean
-//    public RedisMessageListenerContainer redisMessageListener(RedisConnectionFactory factory,
-//                                                              RedisSubscriber subscriber,
-//                                                              CommitteeSubscriber committeeSubscriber,
-//                                                              LedgerSubscriber ledgerSubService){
-//        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
-//        container.setConnectionFactory(factory);
-//
-//        // 채널 지정 - 22개
-////        container.addMessageListener(committeeSubscriber, new ChannelTopic("test.publisher.request"));
-////        container.addMessageListener(committeeSubscriber, new ChannelTopic("nestjs:response:register-user"));
-////        container.addMessageListener(committeeSubscriber, new ChannelTopic("nestjs:response:membership:updated"));
-////        container.addMessageListener(committeeSubscriber, new ChannelTopic("nestjs:response:membership:approve"));
-////        container.addMessageListener(committeeSubscriber, new ChannelTopic("nestjs:response:membership:rejected"));
-////        container.addMessageListener(ledgerSubService, new ChannelTopic("nestjs:response:deposit:created"));
-////        container.addMessageListener(ledgerSubService, new ChannelTopic("nestjs:response:deposit:updated"));
-////        container.addMessageListener(ledgerSubService, new ChannelTopic("nestjs:response:deposit:approved"));
-////        container.addMessageListener(ledgerSubService, new ChannelTopic("nestjs:response:deposit:rejected"));
-////        container.addMessageListener(ledgerSubService, new ChannelTopic("nestjs:response:withdraw:created"));
-////        container.addMessageListener(ledgerSubService, new ChannelTopic("nestjs:response:withdraw:updated"));
-////        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:withdraw:result"));
-////        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:error"));
-////        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:student-count"));
-////        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:student-council-count"));
-////        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:pending-register"));
-////        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:status-register"));
-////        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:pending-deposits"));
-////        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:pending-withdraws"));
-////        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:withdraw-vote-status"));
-////        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:thema-balance"));
-////        container.addMessageListener(subscriber, new ChannelTopic("nestjs:response:thema-balances"));
-//        return container;
-//    }
 
     @Bean
     public ObjectMapper objectMapper() {

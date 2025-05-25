@@ -42,7 +42,8 @@ public class SecurityConfig {
             "/swagger-ui.html",
             "/api/pubsub/**",
             "/signup-test",
-            "/streams/**"
+            "/streams/**",
+            "api/fcm/**"
     };
 
     @Bean

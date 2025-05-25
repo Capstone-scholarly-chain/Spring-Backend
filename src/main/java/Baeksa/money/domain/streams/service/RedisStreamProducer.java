@@ -1,4 +1,4 @@
-package Baeksa.money.domain.streams.service.github;
+package Baeksa.money.domain.streams.service;
 
 import Baeksa.money.global.excepction.CustomException;
 import Baeksa.money.global.excepction.code.ErrorCode;

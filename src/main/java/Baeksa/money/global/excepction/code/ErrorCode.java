@@ -113,8 +113,10 @@ public enum ErrorCode implements BaseErrorCode {
 
 
     // redis streams
-    STREAMS_SEND_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "STREAMS_001", "스트림 전송 실패.");
+    STREAMS_SEND_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "STREAMS_001", "스트림 전송 실패."),
 
+    //theme
+    DUPLICATED_THEME(HttpStatus.BAD_REQUEST, "THEME_001", "이미 생성된 테마입니다.");
 
 
 

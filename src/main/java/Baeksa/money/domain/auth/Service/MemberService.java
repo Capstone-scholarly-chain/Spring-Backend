@@ -56,18 +56,6 @@ public class MemberService {
     }
 
 
-    public void ValidAccess(String header){
-
-        if (header != null && header.startsWith("Bearer ")) {
-            String token = header.substring(7); // "Bearer " 이후만 추출
-            // token 검증 로직 수행
-            jwtUtil.validateJwt(token);
-
-        } else {
-            throw new CustomException(ErrorCode.INVALID_ACCESS);
-        }
-    }
-
     @Transactional
     public void approve(String studentId) {
         Optional<MemberEntity> Op = memberRepository.findByStudentId(studentId);
