@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @AllArgsConstructor
 public class ThemeReqDto {
@@ -16,7 +18,9 @@ public class ThemeReqDto {
     @AllArgsConstructor
     public static class createThemeDto {
         private String themeName;
-        private boolean semester;
         private int year;
+        private boolean semester;
+        private LocalDateTime createdAt;
+
     }
 }

@@ -1,12 +1,13 @@
 package Baeksa.money.domain.ledger.controller;
 
 import Baeksa.money.domain.ledger.dto.ThemeReqDto;
+import Baeksa.money.domain.ledger.dto.ThemeResDto;
 import Baeksa.money.domain.ledger.entity.Theme;
 import Baeksa.money.domain.ledger.service.LedgerPubService;
 import Baeksa.money.domain.ledger.service.LedgerService;
 import Baeksa.money.domain.ledger.dto.PendingDepositDto;
 import Baeksa.money.domain.ledger.dto.VoteDto;
-//import Baeksa.money.domain.ledger.service.ThemeService;
+import Baeksa.money.domain.ledger.service.ThemeService;
 import Baeksa.money.global.config.swagger.ApiErrorCodeExample;
 import Baeksa.money.global.excepction.code.BaseApiResponse;
 import Baeksa.money.global.excepction.code.ErrorCode;
@@ -26,26 +27,26 @@ import java.util.Map;
 public class LedgerController {
 
     private final LedgerService ledgerService;
-//    private final LedgerPubService ledgerPubService;
-//    private final ThemeService themeService;
+    private final LedgerPubService ledgerPubService;
+    private final ThemeService themeService;
 
-//    @Operation(summary = "테마 생성")
-//    @PostMapping("/theme")
-//    public ResponseEntity<?> theme(@RequestBody ThemeReqDto.createThemeDto dto){
-//
-//        Theme theme = themeService.create(dto.getThemeName(), dto.getYear(), dto.isSemester());
-//        return ResponseEntity.ok(new BaseApiResponse<>(201, "GET-DEPOSITS",
-//                "대기중인 입금 항목 조회", theme));
-//    }
+    @Operation(summary = "테마 생성")
+    @PostMapping("/theme")
+    public ResponseEntity<?> theme(@RequestBody ThemeReqDto.createThemeDto dto){
 
-//    @Operation(summary = "테마 생성")
-//    @PostMapping("/theme")
-//    public ResponseEntity<?> getTheme(@RequestParam ThemeReqDto.createThemeDto dto){
-//
-//        Theme theme = themeService.getTheme(dto.getThemeName(), dto.getYear(), dto.isSemester());
-//        return ResponseEntity.ok(new BaseApiResponse<>(201, "GET-DEPOSITS",
-//                "대기중인 입금 항목 조회", theme));
-//    }
+        ThemeResDto themeResDto = themeService.create(dto);
+        return ResponseEntity.ok(new BaseApiResponse<>(201, "CREATE_THEME",
+                "CREATE_THEME", themeResDto));
+    }
+
+    @Operation(summary = "테마 조회")
+    @PostMapping("/get-theme")
+    public ResponseEntity<?> getTheme(@RequestParam ThemeReqDto.createThemeDto dto){
+
+        List<ThemeResDto> themeResDtoList = themeService.searchThemes(dto);
+        return ResponseEntity.ok(new BaseApiResponse<>(200, "GET_THEMES",
+                "GET_THEMES", themeResDtoList));
+    }
 
 
     @ApiErrorCodeExample(value = ErrorCode.class, include = {"PENDING_DEPOSIT_FETCH_FAILED"})
