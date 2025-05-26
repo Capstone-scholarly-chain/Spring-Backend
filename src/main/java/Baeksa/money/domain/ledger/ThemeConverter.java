@@ -17,8 +17,7 @@ public class ThemeConverter {
         return Theme.builder()
                 .themeName(dto.getThemeName())
                 .year(dto.getYear())
-                .semester(dto.isSemester())
-                .createdAt(dto.getCreatedAt())
+                .semester(dto.getSemester())
                 .build();
     }
 
@@ -26,8 +25,7 @@ public class ThemeConverter {
         return ThemeResDto.builder()
                 .themeName(theme.getThemeName())
                 .year(theme.getYear())
-                .semester(theme.isSemester())
-                .createdAt(theme.getCreatedAt())
+                .semester(theme.getSemester())
                 .build();
     }
 

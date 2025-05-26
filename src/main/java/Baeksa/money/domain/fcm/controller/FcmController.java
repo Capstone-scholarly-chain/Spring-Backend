@@ -1,5 +1,6 @@
-package Baeksa.money.domain.fcm;
+package Baeksa.money.domain.fcm.controller;
 
+import Baeksa.money.domain.fcm.service.FcmService;
 import Baeksa.money.global.excepction.code.BaseApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;

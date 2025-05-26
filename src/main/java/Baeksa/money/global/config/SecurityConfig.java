@@ -43,7 +43,8 @@ public class SecurityConfig {
             "/api/pubsub/**",
             "/signup-test",
             "/streams/**",
-            "api/fcm/**"
+            "api/fcm/**",
+            "api/ledger/**"
     };
 
     @Bean

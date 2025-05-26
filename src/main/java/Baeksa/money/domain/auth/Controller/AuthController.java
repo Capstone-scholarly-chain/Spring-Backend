@@ -39,14 +39,8 @@ import java.util.Map;
 @Tag(name = "Auth", description = "회원가입 & 로그인 관련 API")
 public class AuthController {
 
-    private final MemberService memberService;
-    private final StudentValidService studentValidService;
-    private final MemberConverter memberConverter;
     private final RefreshTokenService refreshTokenService;
-    private final JWTUtil jwtUtil;
-    private final CommitteePublisher committeePublisher;
     private final AuthService authService;
-
 
     @Operation(summary = "회원가입 API")
     @ApiErrorCodeExample(

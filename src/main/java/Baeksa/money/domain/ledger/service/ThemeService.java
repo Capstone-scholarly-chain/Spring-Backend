@@ -1,5 +1,6 @@
 package Baeksa.money.domain.ledger.service;
 
+import Baeksa.money.domain.ledger.Semester;
 import Baeksa.money.domain.ledger.ThemeConverter;
 import Baeksa.money.domain.ledger.ThemeRepository;
 import Baeksa.money.domain.ledger.dto.ThemeReqDto;
@@ -13,6 +14,7 @@ import Baeksa.money.global.excepction.code.ErrorCode;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -23,26 +25,40 @@ public class ThemeService {
     private final ThemeConverter themeConverter;
 
     public ThemeResDto create(ThemeReqDto.createThemeDto createThemeDto) {
+        Optional<Theme> themeOpt = themeRepository.findByThemeNameAndYearAndSemester(
+                createThemeDto.getThemeName(),
+                createThemeDto.getYear(),
+                createThemeDto.getSemester());
 
-        Theme theme = themeRepository.findByThemeName(createThemeDto.getThemeName());
-        if(theme.getYear() == createThemeDto.getYear() && theme.isSemester() == createThemeDto.isSemester()) {
+        if (themeOpt.isPresent()) {
             throw new CustomException(ErrorCode.DUPLICATED_THEME);
         }
+
+        // 새로운 테마 생성
         Theme savedTheme = themeConverter.convertDtoToTheme(createThemeDto);
         themeRepository.save(savedTheme);
 
-        ThemeResDto themeResDto = themeConverter.convertThemeToDto(savedTheme);
-        return themeResDto;
+        return themeConverter.convertThemeToDto(savedTheme);
     }
 
-    public List<ThemeResDto> searchThemes(ThemeReqDto.createThemeDto dto) {
-        try {
-            // DTO에서 값 추출 (null 체크 포함)
-            String themeName = (dto.getThemeName() != null && !dto.getThemeName().trim().isEmpty())
-                    ? dto.getThemeName().trim() : null;
-            Integer year = (dto.getYear() > 0) ? dto.getYear() : null;
-            Boolean semester = dto.isSemester(); // boolean이므로 null 체크는 Boolean 타입으로 변경 필요
+//    public ThemeResDto create(ThemeReqDto.createThemeDto createThemeDto) {
+//
+//        Optional<Theme> themeOpt = themeRepository.findByThemeName(createThemeDto.getThemeName());
+//        if (themeOpt.isPresent()) {
+//            Theme existingTheme = themeOpt.get();
+//            if (existingTheme.getYear() == createThemeDto.getYear()
+//                    && existingTheme.isSemester() == createThemeDto.isSemester()) {
+//                throw new CustomException(ErrorCode.DUPLICATED_THEME);
+//            }
+//        }
+//        Theme savedTheme = themeConverter.convertDtoToTheme(createThemeDto);
+//        savedTheme = themeRepository.save(savedTheme); // 여기서 DB에 반영된 createdAt 포함
+//
+//        return themeConverter.convertThemeToDto(savedTheme);
+//    }
 
+    public List<ThemeResDto> searchThemes(String themeName, Integer year, Semester semester) {
+        try {
             log.info("테마 검색 조건: themeName={}, year={}, semester={}", themeName, year, semester);
 
             List<Theme> results = themeRepository.findThemesByOptionalConditions(themeName, year, semester);

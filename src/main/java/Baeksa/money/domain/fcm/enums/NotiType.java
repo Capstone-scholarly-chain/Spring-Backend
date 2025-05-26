@@ -1,4 +1,4 @@
-package Baeksa.money.domain.fcm;
+package Baeksa.money.domain.fcm.enums;
 
 public enum NotiType {
     REGISTER_USER,		//학생 회원가입 및 조직 신청

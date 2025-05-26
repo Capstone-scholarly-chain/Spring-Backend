@@ -1,4 +1,4 @@
-package Baeksa.money.domain.fcm;
+package Baeksa.money.domain.fcm.service;
 
 import com.google.firebase.messaging.*;
 import lombok.RequiredArgsConstructor;

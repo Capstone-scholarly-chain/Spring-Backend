@@ -31,4 +31,9 @@ public class StreamsController {
         return ResponseEntity.ok(new BaseApiResponse<>(200, "test", "test 완료", recordId.getValue()));
     }
 
+    @PostMapping("/approve")
+    public ResponseEntity<?> approve(@RequestBody StreamReqDto.MembershipApprovalDto dto) {
+        RecordId recordId = redisStreamProducer.sendMessage(dto, "APPROVE_MEMBERSHIP");
+        return ResponseEntity.ok(new BaseApiResponse<>(200, "test", "test 완료", recordId.getValue()));
+    }
 }

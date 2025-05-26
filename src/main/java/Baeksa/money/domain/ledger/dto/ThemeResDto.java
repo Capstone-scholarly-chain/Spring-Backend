@@ -1,5 +1,6 @@
 package Baeksa.money.domain.ledger.dto;
 
+import Baeksa.money.domain.ledger.Semester;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -12,6 +13,6 @@ public class ThemeResDto {
 
     private String themeName;
     private int year;
-    private boolean semester;
+    private Semester semester;
     private LocalDateTime createdAt;
 }

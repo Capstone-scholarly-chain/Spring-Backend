@@ -1,5 +1,6 @@
 package Baeksa.money.domain.ledger.dto;
 
+import Baeksa.money.domain.ledger.Semester;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,10 +18,9 @@ public class ThemeReqDto {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class createThemeDto {
+
         private String themeName;
         private int year;
-        private boolean semester;
-        private LocalDateTime createdAt;
-
+        private Semester semester;
     }
 }

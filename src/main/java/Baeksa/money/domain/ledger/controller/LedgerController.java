@@ -1,5 +1,6 @@
 package Baeksa.money.domain.ledger.controller;
 
+import Baeksa.money.domain.ledger.Semester;
 import Baeksa.money.domain.ledger.dto.ThemeReqDto;
 import Baeksa.money.domain.ledger.dto.ThemeResDto;
 import Baeksa.money.domain.ledger.entity.Theme;
@@ -36,16 +37,18 @@ public class LedgerController {
 
         ThemeResDto themeResDto = themeService.create(dto);
         return ResponseEntity.ok(new BaseApiResponse<>(201, "CREATE_THEME",
-                "CREATE_THEME", themeResDto));
+                "테마 생성 완료", themeResDto));
     }
 
     @Operation(summary = "테마 조회")
     @PostMapping("/get-theme")
-    public ResponseEntity<?> getTheme(@RequestParam ThemeReqDto.createThemeDto dto){
+    public ResponseEntity<?> getTheme(@RequestParam(required = false) String themeName,
+                                      @RequestParam(required = false) Integer year,
+                                      @RequestParam(required = false) Semester semester){
 
-        List<ThemeResDto> themeResDtoList = themeService.searchThemes(dto);
+        List<ThemeResDto> themeResDtoList = themeService.searchThemes(themeName, year, semester);
         return ResponseEntity.ok(new BaseApiResponse<>(200, "GET_THEMES",
-                "GET_THEMES", themeResDtoList));
+                "테마 조회", themeResDtoList));
     }
 
 

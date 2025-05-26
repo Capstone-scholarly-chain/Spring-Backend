@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ThemeRepository extends JpaRepository<Theme, Long> {
@@ -19,7 +20,8 @@ public interface ThemeRepository extends JpaRepository<Theme, Long> {
     List<Theme> findThemesByOptionalConditions(
             @Param("themeName") String themeName,
             @Param("year") Integer year,
-            @Param("semester") Boolean semester);
+            @Param("semester") Semester semester);
 
-    Theme findByThemeName(String themeName);
+    Optional<Theme> findByThemeNameAndYearAndSemester(String themeName, int year, Semester semester);
+    Optional<Theme> findByThemeName(String themeName);
 }

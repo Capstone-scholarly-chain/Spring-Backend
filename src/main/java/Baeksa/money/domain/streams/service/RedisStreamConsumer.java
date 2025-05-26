@@ -1,7 +1,8 @@
 package Baeksa.money.domain.streams.service;
 
 
-import Baeksa.money.domain.fcm.FcmService;
+import Baeksa.money.domain.fcm.service.FcmService;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -128,14 +129,51 @@ public class RedisStreamConsumer implements StreamListener<String, MapRecord<Str
                 case "APPROVE_MEMBERSHIP" -> {
                     log.info("✅ 멤버십 승인 완료");
                     log.info("   - 결과: {}", resultData);
-                    String userId = resultData.get("userId").toString();
-                    fcmService.sendMessageToUser(userId, userId + " 님", "조직 가입 요청이 승인되었습니다.");
+
+                    Object requestObj = resultData.get("request");
+                    log.info("   - request: {}", requestObj);
+
+                    if (requestObj instanceof Map<?, ?> requestMap) {
+                        String applicantId = requestMap.get("applicantId").toString();
+                        fcmService.sendMessageToUser(applicantId, applicantId + " 님", "조직 가입 요청이 승인되었습니다.");
+                    } else if (requestObj instanceof String requestStr) {
+                        // JSON 문자열일 경우 수동으로 파싱
+                        try {
+                            ObjectMapper objectMapper = new ObjectMapper();
+                            Map<String, Object> requestMap = objectMapper.readValue(requestStr, new TypeReference<>() {});
+                            String applicantId = requestMap.get("applicantId").toString();
+                            fcmService.sendMessageToUser(applicantId, applicantId + " 님", "조직 가입 요청이 승인되었습니다.");
+                        } catch (Exception e) {
+                            log.warn("[ request JSON 파싱 실패 ]", e);
+                        }
+                    } else {
+                        log.warn("[ request 형식을 알 수 없음 ]: {}", requestObj.getClass().getName());
+                    }
                 }
                 case "REJECT_MEMBERSHIP" -> {
                     log.info("❌ 멤버십 거절 완료");
                     log.info("   - 결과: {}", resultData);
-                    String userId = resultData.get("userId").toString();
-                    fcmService.sendMessageToUser(userId, userId + " 님", "조직 가입 요청이 거부되었습니다.");
+                    Object requestObj = resultData.get("request");
+                    log.info("   - request: {}", requestObj);
+
+                    if (requestObj instanceof Map<?, ?> requestMap) {
+                        String rejectorId = requestMap.get("rejectorId").toString();
+                        log.info("어디가 찍히는");
+                        fcmService.sendMessageToUser(rejectorId, rejectorId + " 님", "조직 가입 요청이 승인되었습니다.");
+                    } else if (requestObj instanceof String requestStr) {
+                        // JSON 문자열일 경우 수동으로 파싱
+                        try {
+                            ObjectMapper objectMapper = new ObjectMapper();
+                            Map<String, Object> requestMap = objectMapper.readValue(requestStr, new TypeReference<>() {});
+                            String rejectorId = requestMap.get("rejectorId").toString();
+                            log.info("건지 모르겠네");
+                            fcmService.sendMessageToUser(rejectorId, rejectorId + " 님", "조직 가입 요청이 거부되었습니다.");
+                        } catch (Exception e) {
+                            log.warn("[ request JSON 파싱 실패 ]", e);
+                        }
+                    } else {
+                        log.warn("[ request 형식을 알 수 없음 ]: {}", requestObj.getClass().getName());
+                    }
                 }
 
 
