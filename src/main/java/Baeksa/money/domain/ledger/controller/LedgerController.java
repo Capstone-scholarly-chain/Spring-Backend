@@ -51,12 +51,13 @@ public class LedgerController {
                 "테마 조회", themeResDtoList));
     }
 
+/////////////////////////////////////////////
 
     @ApiErrorCodeExample(value = ErrorCode.class, include = {"PENDING_DEPOSIT_FETCH_FAILED"})
     @Operation(summary = "대기중인 입금 항목 조회")
     @GetMapping("/deposits")
     public ResponseEntity<?> deposits(){
-        List<String> pendingDeposits = ledgerService.getPendingDeposits();
+        List<Map<String, Object>> pendingDeposits = ledgerService.getPendingDeposits();
         return ResponseEntity.ok(new BaseApiResponse<>(200, "GET-DEPOSITS",
                 "대기중인 입금 항목 조회", pendingDeposits));
     }
@@ -65,11 +66,10 @@ public class LedgerController {
     @Operation(summary = "대기중인 출금 항목 조회")
     @GetMapping("/withdrawals")
     public ResponseEntity<?> withdrawals(){
-        List<String> pendingWithdrawals = ledgerService.getPendingWithdrawals();
+        List<Map<String, Object>> pendingWithdrawals = ledgerService.getPendingWithdrawals();
         return ResponseEntity.ok(new BaseApiResponse<>(200, "GET-WITHDRAWALS",
                 "대기중인 출금 항목 조회", pendingWithdrawals));
     }
-
 
 
 //    @GetMapping("/{studentId}")
@@ -151,9 +151,14 @@ public class LedgerController {
 
     @ApiErrorCodeExample(value = ErrorCode.class, include = {"JSON_FAILED", "VOTE_STATUS_FETCH_FAILED"})
     @Operation(summary = "투표 현황 조회")
-    @GetMapping("/vote-status/{key}")
-    public ResponseEntity<?> getVoteStatus(@PathVariable("key") String key){
-        VoteDto.setVodeDto voteStatus = ledgerService.getVoteStatus(key);
+    @GetMapping("/vote-status/{requestId}")
+    public ResponseEntity<?> getVoteStatus(@PathVariable("requestId") String requestId){
+        VoteDto.setVodeDto voteStatus = null;
+        try {
+            voteStatus = ledgerService.getVoteStatus(requestId);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         return ResponseEntity.ok(new BaseApiResponse<>(200, "VOTE-STATUS",
                 "투표 현황 조회", voteStatus));
     }

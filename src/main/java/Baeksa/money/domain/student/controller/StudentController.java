@@ -20,7 +20,7 @@ import java.util.Map;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/pubsub/student")
+@RequestMapping("/api/student")
 @Tag(name = "학생 회원 등록/장부 등록 API")
 @RequiredArgsConstructor
 public class StudentController {
@@ -75,7 +75,8 @@ public class StudentController {
     @GetMapping("/counts")
     public ResponseEntity<?> getStudentCount(){
 
-        int count = studentService.findStudentCount();
-        return ResponseEntity.ok(new BaseApiResponse<>(200, "FIND-STUDENTS-COUNTS", "모든 학생 수 조회", count));
+        String count = studentService.findStudentCount();
+        int counts = Integer.parseInt(count);
+        return ResponseEntity.ok(new BaseApiResponse<>(200, "FIND-STUDENTS-COUNTS", "모든 학생 수 조회", counts));
     }
 }

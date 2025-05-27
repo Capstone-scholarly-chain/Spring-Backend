@@ -44,7 +44,9 @@ public class SecurityConfig {
             "/signup-test",
             "/streams/**",
             "api/fcm/**",
-            "api/ledger/**"
+            "api/ledger/**",
+            "api/committee/**",
+            "api/student/**"
     };
 
     @Bean

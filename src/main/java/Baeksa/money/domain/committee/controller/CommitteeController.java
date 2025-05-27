@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.*;
 //INVALID_ACCESS(HttpStatus.BAD_REQUEST, "JWT_006", "accessToken이 유효하지 않습니다."),
 @Slf4j
 @RestController
-@RequestMapping("/api/pubsub/committee")
+@RequestMapping("/api/committee")
 @Tag(name = "학생회 회원 등록/장부 등록 API")
 @RequiredArgsConstructor
 public class CommitteeController {
@@ -120,8 +120,9 @@ public class CommitteeController {
     @GetMapping("/counts")
     public ResponseEntity<?> getCommitteeCount(){
 
-        int count = committeeService.findCommitteeCount();
-        return ResponseEntity.ok(new BaseApiResponse<>(200, "FIND-COMMITTEE-COUNTS", "모든 학생회 수 조회", count));
+        String count = committeeService.findCommitteeCount();
+        int counts = Integer.parseInt(count);
+        return ResponseEntity.ok(new BaseApiResponse<>(200, "FIND-COMMITTEE-COUNTS", "모든 학생회 수 조회", counts));
     }
 }
 

@@ -18,57 +18,57 @@ public class RequestResponseTracker {
     /**
      * 요청 등록
      */
-    public CountDownLatch registerRequest(String requestId) {
+    public CountDownLatch registerRequest(String recordId) {
         CountDownLatch latch = new CountDownLatch(1);
-        log.info("요청 등록: {}", requestId);
+        log.info("요청 등록: {}", recordId);
         //count가 1보다 작으면 illegal
-        pendingRequests.put(requestId, latch);
-        requestResults.put(requestId, new AtomicBoolean(false));
+        pendingRequests.put(recordId, latch);
+        requestResults.put(recordId, new AtomicBoolean(false));
 
-        log.info("요청 등록: {}", requestId);
+        log.info("요청 등록: {}", recordId);
         return latch;
     }
 
     /**
      * 요청 완료 처리
      */
-    public void markRequestCompleted(String requestId) {
-        AtomicBoolean result = requestResults.get(requestId);
+    public void markRequestCompleted(String recordId) {
+        AtomicBoolean result = requestResults.get(recordId);
         if (result != null) {
             result.set(true);
         }
 
-        CountDownLatch latch = pendingRequests.get(requestId);
+        CountDownLatch latch = pendingRequests.get(recordId);
         if (latch != null) {
             latch.countDown();
-            log.debug("요청 완료 처리: {}", requestId);
+            log.debug("요청 완료 처리: {}", recordId);
         } else {
-            log.warn("알 수 없는 요청 ID: {}", requestId);
+            log.warn("알 수 없는 요청 ID: {}", recordId);
         }
     }
 
     /**
      * 요청 성공 확인
      */
-    public boolean isRequestSuccessful(String requestId) {
+    public boolean isRequestSuccessful(String recordId) {
         AtomicBoolean result = null;
         try {
-            result = requestResults.get(requestId);
-            log.info("[result]:{}", result);
+            result = requestResults.get(recordId);
+            log.info("[result recordId ]:{}", result);
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
-        log.info("[ track안에 requestId ]: {}" , requestId);
+        log.info("[ track안에 recordId ]: {}" , recordId);
         return result != null && result.get();
     }
 
     /**
      * 완료된 요청 정리
      */
-    public void cleanupRequest(String requestId) {
-        pendingRequests.remove(requestId);
-        requestResults.remove(requestId);
-        log.debug("요청 정리: {}", requestId);
+    public void cleanupRequest(String recordId) {
+        pendingRequests.remove(recordId);
+        requestResults.remove(recordId);
+        log.debug("요청 정리: {}", recordId);
     }
 }
