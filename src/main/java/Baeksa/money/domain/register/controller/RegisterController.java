@@ -36,6 +36,7 @@ public class RegisterController {
         return ResponseEntity.ok(new BaseApiResponse<>(200, "GET-PENDING-REQUESTS", "모든 대기중인 회원가입(조직 가입) 요청 조회", list));
     }
 
+    ////이걸 고쳐야 하는게 아니라
     @ApiErrorCodeExample(value = ErrorCode.class, include = {""})
     @Operation(summary = "특정 id 회원가입(조직 가입) 요청 상태 조회")
     @PostMapping("/register-status")
@@ -44,4 +45,14 @@ public class RegisterController {
         String status = registerService.findRegisterUserStatus(dto.getUserRequestId());   //로그인된 사람의 요청 상태 조회
         return ResponseEntity.ok(new BaseApiResponse<>(200, "FIND-ID-PENDING-REQUESTS", "특정 id 회원가입(조직 가입) 요청 상태 조회", status));
     }
+
+//    ////이걸 고쳐야 하는게 아니라
+//    @ApiErrorCodeExample(value = ErrorCode.class, include = {""})
+//    @Operation(summary = "특정 id 회원가입(조직 가입) 요청 상태 조회")
+//    @PostMapping("/register-status")
+//    public ResponseEntity<?> getIdStatusRequests(@RequestBody RegisterDto dto) {
+//
+//        String status = registerService.findRegisterUserStatus(dto.getUserRequestId());   //로그인된 사람의 요청 상태 조회
+//        return ResponseEntity.ok(new BaseApiResponse<>(200, "FIND-ID-PENDING-REQUESTS", "특정 id 회원가입(조직 가입) 요청 상태 조회", status));
+//    }
 }

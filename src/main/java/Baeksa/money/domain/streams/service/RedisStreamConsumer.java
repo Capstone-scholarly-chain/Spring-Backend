@@ -39,12 +39,8 @@ public class RedisStreamConsumer implements StreamListener<String, MapRecord<Str
     private final FcmService fcmService;
 
     private final RequestResponseTracker requestTracker;
-    private final RedisTemplate<String, Integer> redisTemplateInteger;
 
-    private static final String SPRING_TO_NESTJS_STREAM = "spring-nestjs-requests";
-    private static final String NESTJS_TO_SPRING_STREAM = "nestjs-spring-responses";
-    private static final String NESTJS_CONSUMER_GROUP = "nest-consumer-group";    // NestJS와 동일
-    private static final String NESTJS_CONSUMER_NAME = "nest-consumer";           // NestJS와 동일
+    private static final String NESTJS_TO_SPRING_STREAM = "nestjs-spring-responses";     // NestJS와 동일
     private static final String SPRING_CONSUMER_GROUP = "spring-consumer-group";  // Spring 전용
     private static final String SPRING_CONSUMER_NAME = "spring-consumer";
 
@@ -298,9 +294,20 @@ public class RedisStreamConsumer implements StreamListener<String, MapRecord<Str
                 }
                 case "GET_THEME_BALANCE" -> {
                     log.info("GET_THEME_BALANCE");
+                    Map<String, Object> resultData = objectMapper.readValue(result, Map.class);
+                    log.info("조회 요청 완료: {}", requestType);
+                    log.info("   - 결과: {}", resultData);
+                    requestTracker.markRequestCompleted(originalRecordId);
+                    log.info("🎯 하나의 테마 조회 완료 처리: {}", originalRecordId);
+
                 }
                 case "GET_ALL_THEME_BALANCE" -> {
                     log.info("GET_ALL_THEME_BALANCE");
+                    List<Map<String, Object>> depositList = objectMapper.readValue(
+                            result, new TypeReference<List<Map<String, Object>>>() {});
+                    log.info("   - 결과: {}", depositList);
+                    requestTracker.markRequestCompleted(originalRecordId);
+                    log.info("모든 테마 조회 완료 처리: {}", originalRecordId);
                 }
 
                 default -> {

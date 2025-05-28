@@ -65,7 +65,7 @@ public List<Map<String, Object>> getPendingRequests() {
 }
 
     private List<Map<String, Object>> requestPendingRequests() throws InterruptedException, JsonProcessingException {
-        String recordId = redisStreamProducer.sendMessage("대기중인 입금 요청", "GET_PENDING_DEPOSITS").toString();
+        String recordId = redisStreamProducer.sendMessage("대기중인 입금 요청", "GET_PENDING_REQUESTS").toString();
         CountDownLatch latch = requestTracker.registerRequest(recordId);
 
         try {

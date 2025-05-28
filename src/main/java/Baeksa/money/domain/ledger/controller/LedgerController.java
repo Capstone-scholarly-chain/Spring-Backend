@@ -28,7 +28,6 @@ import java.util.Map;
 public class LedgerController {
 
     private final LedgerService ledgerService;
-    private final LedgerPubService ledgerPubService;
     private final ThemeService themeService;
 
     @Operation(summary = "테마 생성")
@@ -41,7 +40,7 @@ public class LedgerController {
     }
 
     @Operation(summary = "테마 조회")
-    @PostMapping("/get-theme")
+    @GetMapping("/get-theme")
     public ResponseEntity<?> getTheme(@RequestParam(required = false) String themeName,
                                       @RequestParam(required = false) Integer year,
                                       @RequestParam(required = false) Semester semester){
@@ -80,7 +79,7 @@ public class LedgerController {
 //    }
 
     @ApiErrorCodeExample(value = ErrorCode.class, include = {"JSON_FAILED", "MY_HISTORY_FETCH_FAILED"})
-    @Operation(summary = "나의 내역 조회")
+    @Operation(summary = "나의 내역 조회(개발중)")
     @GetMapping("/{studentId}")
     public ResponseEntity<?> getMyList2(@PathVariable("studentId") String studentId){
         List<Map<String, Object>> myList = ledgerService.getMyList2(studentId);
@@ -88,82 +87,16 @@ public class LedgerController {
                 "나의 내역 조회", myList));
     }
 
-    @ApiErrorCodeExample(value = ErrorCode.class, include = {"JSON_FAILED", "DEPOSIT_CACHE_FAILED"})
-    @Operation(summary = "입금 항목 캐싱")
-    @PostMapping("/pending-deposits")
-    public ResponseEntity<?> cachePendingDeposits(@RequestBody List<PendingDepositDto> deposits) {
-        ledgerService.cachePendingDeposits(deposits);
-        return ResponseEntity.ok(new BaseApiResponse<>(200, "CACHE-PENDING-DEPOSITS", "입금 항목 캐싱 완료", null));
-    }
-
-    @ApiErrorCodeExample(value = ErrorCode.class, include = {"JSON_FAILED", "WITHDRAW_CACHE_FAILED"})
-    @Operation(summary = "출금 항목 캐싱")
-    @PostMapping("/pending-withdraws")
-    public ResponseEntity<?> cachePendingWithdraws(@RequestBody List<PendingDepositDto> deposits) {
-        ledgerService.cachePendingWithdraws(deposits);
-        return ResponseEntity.ok(new BaseApiResponse<>(200, "CACHE-PENDING-WITHDRAW", "출금 항목 캐싱 완료", null));
-    }
-
-    @ApiErrorCodeExample(value = ErrorCode.class, include = {"JSON_FAILED", "VOTE_REGISTER_FAILED"})
-    @Operation(summary = "투표 등록")
-    @PostMapping("/vote-status")
-    public ResponseEntity<?> setVoteStatus(@RequestBody VoteDto.setVodeDto votes){
-        VoteDto.setVodeDto result = ledgerService.setVoteStatus(votes, votes.getEntryId());
-        return ResponseEntity.ok(new BaseApiResponse<>(200, "VOTE-STATUS",
-                "투표 등록", result));
-    }
-
-    @ApiErrorCodeExample(value = ErrorCode.class, include = {"JSON_FAILED", "ONE_THEME_BALANCE_REGISTER_FAILED"})
-    @Operation(summary = "하나의 테마 잔액 등록")
-    @PostMapping("/theme-balance")
-    public ResponseEntity<?> setThemeBalance(@RequestBody VoteDto.ThemeBalanceDto themeBalanceDto) {
-        VoteDto.ThemeBalanceDto result = ledgerService.setThemeBalance(themeBalanceDto, themeBalanceDto.getTheme());
-        return ResponseEntity.ok(new BaseApiResponse<>(200, "POST-ONE-THEME-BALLANCE",
-                "하나의 테마 잔액 등록", result));
-    }
-
-    @ApiErrorCodeExample(value = ErrorCode.class, include = {"JSON_FAILED", "ALL_THEME_BALANCE_FETCH_FAILED"})
-    @Operation(summary = "모든 테마 잔액 등록")
-    @PostMapping("/theme/all")
-    public ResponseEntity<?> setThemeAll(@RequestBody List<VoteDto.ThemeBalanceDto> balances) {
-        List<VoteDto.ThemeBalanceDto> themeBalanceDtos = ledgerService.setAllThemeBalance(balances);
-        return ResponseEntity.ok(new BaseApiResponse<>(200, "SET-ALL-BALANCES", "모든 테마 잔액 조회", themeBalanceDtos));
-    }
-
-
-    @ApiErrorCodeExample(value = ErrorCode.class, include = {"JSON_FAILED", "DEPOSIT_CACHE_COMPLETE"})
-    @Operation(summary = "입금 항목 캐싱 완료")
-    @GetMapping("/pending-deposits")
-    public ResponseEntity<?> getPendingDeposits() {
-        List<PendingDepositDto> result = ledgerService.getPendingDummyDeposits();
-
-        return ResponseEntity.ok(new BaseApiResponse<>(200, "CACHE-PENDING-DEPOSITS", "입금 항목 캐싱 완료", result));
-    }
-
-    @ApiErrorCodeExample(value = ErrorCode.class, include = {"JSON_FAILED", "WITHDRAW_CACHE_COMPLETE"})
-    @Operation(summary = "출금 항목 캐싱 완료")
-    @GetMapping("/pending-withdraws")
-    public ResponseEntity<?> getPendingWithdraws() {
-        List<PendingDepositDto> result = ledgerService.getPendingDummyWithdraws();
-
-        return ResponseEntity.ok(new BaseApiResponse<>(200, "CACHE-PENDING-WITHDRAWS", "출금 항목 캐싱 완료", result));
-    }
-
     @ApiErrorCodeExample(value = ErrorCode.class, include = {"JSON_FAILED", "VOTE_STATUS_FETCH_FAILED"})
     @Operation(summary = "투표 현황 조회")
-    @GetMapping("/vote-status/{requestId}")
-    public ResponseEntity<?> getVoteStatus(@PathVariable("requestId") String requestId){
-        VoteDto.setVodeDto voteStatus = null;
-        try {
-            voteStatus = ledgerService.getVoteStatus(requestId);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+    @GetMapping("/vote-status/{ledgerEntryId}")
+    public ResponseEntity<?> getVoteStatus(@PathVariable("ledgerEntryId") String ledgerEntryId){
+        VoteDto.setVodeDto voteStatus = ledgerService.getVoteStatus(ledgerEntryId);
         return ResponseEntity.ok(new BaseApiResponse<>(200, "VOTE-STATUS",
                 "투표 현황 조회", voteStatus));
     }
     @ApiErrorCodeExample(value = ErrorCode.class, include = {"JSON_FAILED", "ONE_THEME_BALANCE_FETCH_FAILED"})
-    @Operation(summary = "하나의 테마 잔액 조회")
+    @Operation(summary = "하나의 테마 잔액 조회(작업중)")
     @GetMapping("/theme-balance/{theme}")
     public ResponseEntity<?> getThemeBalance(@PathVariable("theme") String theme){
         VoteDto.ThemeBalanceDto voteStatus = ledgerService.getThemeBalance(theme);
@@ -172,8 +105,8 @@ public class LedgerController {
     }
 
     @ApiErrorCodeExample(value = ErrorCode.class, include = {"JSON_FAILED", "TOTAL_BALANCE_FETCH_FAILED"})
-    @Operation(summary = "전체 잔액 조회")
-    @GetMapping("/theme/all")
+    @Operation(summary = "전체 잔액 조회(작업중)")
+    @GetMapping("/theme-balance/all")
     public ResponseEntity<?> themeAll(){
         List<VoteDto.ThemeBalanceDto> allThemeBalance = ledgerService.getAllThemeBalance();
         return ResponseEntity.ok(new BaseApiResponse<>(200, "GET-ALL-THEME-BALANCE",

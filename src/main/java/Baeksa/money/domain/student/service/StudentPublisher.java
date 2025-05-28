@@ -77,7 +77,7 @@ public class StudentPublisher {
             map.put("documentURL", ledgerDto.getDocumentURL());
 
             // nestjs 한테 Pub
-            publish("spring:request:ledger", map);
+//            publish("spring:request:ledger", map);
 
             return map;
 

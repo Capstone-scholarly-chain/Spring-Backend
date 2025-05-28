@@ -273,50 +273,8 @@ public class LedgerService {
         return result;
     }
 
-    public List<PendingDepositDto> getPendingDummyDeposits() {
 
-        try {
-            String s;
-            try {
-                s = redisTemplate.opsForValue().get("ledger:pending-deposits");
-            } catch (Exception e) {
-                throw new CustomException(ErrorCode.DEPOSIT_CACHE_FAILED);
-            }
-            List<PendingDepositDto> result = objectMapper.readValue(
-                    s,
-                    new TypeReference<List<PendingDepositDto>>() {
-                    }
-            );
-            return result;
-        } catch (JsonProcessingException e) {
-            throw new CustomException(ErrorCode.JSON_FAILED);
-        }
-    }
-
-
-    public List<PendingDepositDto> getPendingDummyWithdraws() {
-        try {
-            String s = null;
-            try {
-                s = redisTemplate.opsForValue().get("ledger:pending-withdraws");
-            } catch (Exception e) {
-                throw new CustomException(ErrorCode.WITHDRAW_CACHE_FAILED);
-            }
-            List<PendingDepositDto> result = objectMapper.readValue(
-                    s,
-                    new TypeReference<List<PendingDepositDto>>() {
-                    }
-            );
-            return result;
-        } catch (JsonProcessingException e) {
-            throw new CustomException(ErrorCode.JSON_FAILED);
-        }
-    }
-
-
-
-
-    public VoteDto.setVodeDto getVoteStatus(String requestId) throws InterruptedException {
+    public VoteDto.setVodeDto getVoteStatus(String requestId) {
 
         String s;
         VoteDto.setVodeDto result = null;
@@ -333,7 +291,7 @@ public class LedgerService {
         return result;
     }
     private VoteDto.setVodeDto requestVoteStatus(String requestId) throws InterruptedException {
-        String recordId = redisStreamProducer.sendMessageRequestId(requestId, "GET_REQUEST_STATUS").toString();
+        String recordId = redisStreamProducer.sendMessageLedgerEntryId(requestId, "GET_VOTE_STATUS").toString();
         CountDownLatch latch = requestTracker.registerRequest(recordId);
 
         try {
@@ -384,41 +342,135 @@ public class LedgerService {
 
 
     public VoteDto.ThemeBalanceDto getThemeBalance(String theme) {
+
+        String s ;
+        VoteDto.ThemeBalanceDto result = null;
         try {
-            String s ;
-            try {
-                s = redisTemplate.opsForValue().get("ledger:Theme-balance:" + theme);
-            } catch (Exception e) {
-                throw new CustomException(ErrorCode.ONE_THEME_BALANCE_FETCH_FAILED);
+            s = redisTemplate.opsForValue().get("ledger:Theme-balance:" + theme);
+            if (s == null) {
+                result = requestThemeBalance(theme);
+                log.info("result: {}", result);
             }
-            VoteDto.ThemeBalanceDto result = objectMapper.readValue(
-                    s,
-                    new TypeReference<VoteDto.ThemeBalanceDto>() {
-                    }
-            );
+            log.info("ledger:Theme-balance: {}", s);
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.ONE_THEME_BALANCE_FETCH_FAILED);
+        }
+        return result;
+    }
+
+    private VoteDto.ThemeBalanceDto requestThemeBalance(String theme) throws InterruptedException {
+        String recordId = redisStreamProducer.sendMessageTheme(theme, "GET_THEME_BALANCE").toString();
+        CountDownLatch latch = requestTracker.registerRequest(recordId);
+
+        try {
+            log.debug("테마 잔액 조회: {}, 대상 ID: {}", theme, recordId);
+
+            // 응답 대기
+            boolean receivedInTime = latch.await(REQUEST_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+
+            if (!receivedInTime) {
+                log.warn("테마 잔액 조회 응답 타임아웃: recordId={}", recordId);
+                throw new CustomException(ErrorCode.REQUEST_TIMEOUT);
+            }
+
+            if (!requestTracker.isRequestSuccessful(recordId)) {
+                log.warn("테마 잔액 조회 요청 응답 실패: recordId={}", recordId);
+                throw new CustomException(ErrorCode.REQUEST_FAILED);
+            }
+
+            // 응답을 받았으면 Redis에서 다시 조회
+            String key = "ledger:theme-balance:" + theme;
+            log.info("key: {}", key);
+            String value = redisTemplate.opsForValue().get(key);
+            VoteDto.ThemeBalanceDto result = null;
+            try {
+                result = objectMapper.readValue(
+                        value,
+                        new TypeReference<VoteDto.ThemeBalanceDto>() {
+                        }
+                );
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+            log.info("result: {}", result);
+
+            if (result == null) {
+                log.warn("사용자 가입 상태 응답 후에도 값이 없음: {}", recordId);
+                throw new CustomException(ErrorCode.DATA_NOT_AVAILABLE);    //데이터 없어서 터진듯
+            }
+
+            log.info("사용자 가입 상태 조회 성공: {}", recordId);
             return result;
-        } catch (JsonProcessingException e) {
-            throw new CustomException(ErrorCode.JSON_FAILED);
+
+        } finally {
+            // 완료된 요청 정리
+            requestTracker.cleanupRequest(recordId);
         }
     }
+
+
 
     public List<VoteDto.ThemeBalanceDto> getAllThemeBalance() {
 
         try {
-            String s;
-            try {
-                s = redisTemplate.opsForValue().get("ledger:Theme-balances");
-            } catch (Exception e) {
-                throw new CustomException(ErrorCode.TOTAL_BALANCE_FETCH_FAILED);
-            }
-            List<VoteDto.ThemeBalanceDto> result = objectMapper.readValue(
-                    s, new TypeReference<List<VoteDto.ThemeBalanceDto>>() {
-                    }
-            );
+            String cachedData = redisTemplate.opsForValue().get("ledger:theme-balances");
+            log.info("이건읽냐");
 
-            return result;
-        } catch (JsonProcessingException e) {
-            throw new CustomException(ErrorCode.JSON_FAILED);
+            if (cachedData != null && !cachedData.isEmpty()) {
+                try {
+                    // JSON 문자열을 List<Map>으로 파싱
+                    List<VoteDto.ThemeBalanceDto> result = objectMapper.readValue(
+                            cachedData,
+                            new TypeReference<List<VoteDto.ThemeBalanceDto>>() {}
+                    );
+                    log.info("캐시에서 대기중인 모든 테마 조회: {} 건", result.size());
+                    return result;
+                } catch (Exception e) {
+                    log.warn("캐시된 모든 테마 데이터 파싱 실패, 재요청: {}", e.getMessage());
+                    redisTemplate.delete("ledger:theme-balances"); // 잘못된 데이터 삭제
+                }
+            }
+            log.info("캐시에 대기중인 모든 테마 없음, NestJS에 요청");
+            return requestAllThemeBalance();
+
+        } catch (Exception e) {
+            log.error("대기중인 모든 테마 조회 실패", e);
+            throw new CustomException(ErrorCode.PENDING_DEPOSIT_FETCH_FAILED);
+        }
+    }
+
+    private List<VoteDto.ThemeBalanceDto> requestAllThemeBalance() throws InterruptedException, JsonProcessingException {
+        String recordId = redisStreamProducer.sendMessage("모든 테마 잔액 조회", "GET_ALL_THEME_BALANCE").toString();
+        CountDownLatch latch = requestTracker.registerRequest(recordId);
+
+        try {
+            log.info("대기중인 모든 테마 발송: recordId={}", recordId);
+
+            boolean receivedInTime = latch.await(REQUEST_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+
+            if (!receivedInTime) {
+                log.warn("대기중인 모든 테마 응답 타임아웃: recordId={}", recordId);
+                throw new CustomException(ErrorCode.REQUEST_TIMEOUT);
+            }
+
+            if (!requestTracker.isRequestSuccessful(recordId)) {
+                log.warn("대기중인 모든 테마 응답 실패: recordId={}", recordId);
+                throw new CustomException(ErrorCode.REQUEST_FAILED);
+            }
+
+            // 응답 데이터 조회
+            String data = redisTemplate.opsForValue().get("ledger:theme-balances");
+
+            if (data == null) {
+                log.warn("대기중인 모든 테마 응답 후에도 데이터 없음: recordId={}", recordId);
+                return new ArrayList<>(); // 빈 리스트 반환
+            }
+
+            // JSON 문자열을 List<Map>으로 파싱
+            return objectMapper.readValue(data, new TypeReference<List<VoteDto.ThemeBalanceDto>>() {});
+
+        } finally {
+            requestTracker.cleanupRequest(recordId);
         }
     }
 }
