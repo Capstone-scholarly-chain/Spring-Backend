@@ -89,6 +89,7 @@ public class StreamReqDto {
     @NoArgsConstructor
     public static class streamApproveDto {
         private String approverId;
+        private String userName;
         private String requestId;
     }
 
@@ -97,6 +98,7 @@ public class StreamReqDto {
     @NoArgsConstructor
     public static class streamRejectDto {
         private String rejectorId;
+        private String userName;
         private String requestId;
     }
 

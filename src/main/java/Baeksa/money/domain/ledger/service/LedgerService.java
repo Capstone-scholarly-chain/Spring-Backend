@@ -1,6 +1,6 @@
 package Baeksa.money.domain.ledger.service;
 
-import Baeksa.money.domain.committee.service.RequestResponseTracker;
+import Baeksa.money.global.redis.service.RequestResponseTracker;
 import Baeksa.money.domain.ledger.dto.PendingDepositDto;
 import Baeksa.money.domain.ledger.dto.VoteDto;
 import Baeksa.money.domain.streams.service.RedisStreamProducer;
@@ -8,7 +8,6 @@ import Baeksa.money.global.excepction.CustomException;
 import Baeksa.money.global.excepction.code.ErrorCode;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

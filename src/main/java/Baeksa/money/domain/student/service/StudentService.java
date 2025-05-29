@@ -1,17 +1,14 @@
 package Baeksa.money.domain.student.service;
 
-import Baeksa.money.domain.committee.service.RequestResponseTracker;
+import Baeksa.money.global.redis.service.RequestResponseTracker;
 import Baeksa.money.domain.streams.service.RedisStreamProducer;
 import Baeksa.money.global.excepction.CustomException;
 import Baeksa.money.global.excepction.code.ErrorCode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.connection.stream.RecordId;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 

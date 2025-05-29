@@ -2,34 +2,22 @@ package Baeksa.money.domain.auth.Controller;
 
 
 import Baeksa.money.domain.auth.Dto.MemberDto;
-import Baeksa.money.domain.auth.Entity.MemberEntity;
 import Baeksa.money.domain.auth.Service.AuthService;
-import Baeksa.money.domain.auth.Service.MemberService;
-import Baeksa.money.domain.auth.Service.StudentValidService;
-import Baeksa.money.domain.auth.converter.MemberConverter;
 import Baeksa.money.global.config.swagger.ApiErrorCodeExample;
 import Baeksa.money.global.excepction.code.BaseApiResponse;
-import Baeksa.money.global.excepction.CustomException;
 import Baeksa.money.global.excepction.code.ErrorCode;
-import Baeksa.money.global.jwt.JWTUtil;
 import Baeksa.money.global.redis.RedisDto;
-import Baeksa.money.domain.committee.service.CommitteePublisher;
 import Baeksa.money.global.redis.service.RefreshTokenService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletResponse;
-
-import java.util.HashMap;
-import java.util.Map;
 
 
 //회원가입 & 검증용 컨트롤러

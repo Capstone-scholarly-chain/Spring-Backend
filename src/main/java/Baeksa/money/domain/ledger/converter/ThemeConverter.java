@@ -1,4 +1,4 @@
-package Baeksa.money.domain.ledger;
+package Baeksa.money.domain.ledger.converter;
 
 
 import Baeksa.money.domain.ledger.dto.ThemeReqDto;
@@ -6,7 +6,6 @@ import Baeksa.money.domain.ledger.dto.ThemeResDto;
 import Baeksa.money.domain.ledger.entity.Theme;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,6 +25,7 @@ public class ThemeConverter {
                 .themeName(theme.getThemeName())
                 .year(theme.getYear())
                 .semester(theme.getSemester())
+                .createdAt(theme.getCreatedAt())
                 .build();
     }
 

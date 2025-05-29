@@ -1,12 +1,10 @@
 package Baeksa.money.domain.ledger.dto;
 
-import Baeksa.money.domain.ledger.Semester;
+import Baeksa.money.domain.ledger.enums.Semester;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.time.LocalDateTime;
 
 @Getter
 @AllArgsConstructor

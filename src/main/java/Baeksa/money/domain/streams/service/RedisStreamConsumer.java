@@ -1,7 +1,9 @@
 package Baeksa.money.domain.streams.service;
 
 
-import Baeksa.money.domain.committee.service.RequestResponseTracker;
+import Baeksa.money.domain.auth.Service.MemberService;
+import Baeksa.money.domain.auth.enums.Status;
+import Baeksa.money.global.redis.service.RequestResponseTracker;
 import Baeksa.money.domain.fcm.service.FcmService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,7 +22,6 @@ import org.springframework.data.redis.stream.Subscription;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -39,6 +40,7 @@ public class RedisStreamConsumer implements StreamListener<String, MapRecord<Str
     private final FcmService fcmService;
 
     private final RequestResponseTracker requestTracker;
+    private final MemberService memberService;
 
     private static final String NESTJS_TO_SPRING_STREAM = "nestjs-spring-responses";     // NestJS와 동일
     private static final String SPRING_CONSUMER_GROUP = "spring-consumer-group";  // Spring 전용
@@ -112,12 +114,13 @@ public class RedisStreamConsumer implements StreamListener<String, MapRecord<Str
                 }
                 case "REGISTER_USER" -> {
                     Map<String, Object> resultData = objectMapper.readValue(result, Map.class);
-                    log.info("학생 회원가입 및 조직 신청");
-                    String userId = resultData.get("userId").toString();
-                    log.info("   - 사용자ID: {}", userId);
-                    log.info("   - 상태: {}", resultData.get("status"));
-                    //        message: '입금 항목이 성공적으로 추가되었습니다',
-//                    fcmService.sendMessageToStudents(userId + "님", resultData.get("message").toString());
+                    log.info("학생 회원가입 및 조직 신청: {}", resultData);
+
+                    String requestId = resultData.get("requestId").toString();
+                    log.info("   - 사용자ID: {}", requestId);
+//                    log.info("   - 상태: {}", resultData.get("status"));
+
+                    String userId = splitRequestId(requestId);
                     fcmService.sendMessageToUser(userId, userId + " 님", "회원가입 및 조직 가입 요청이 신청되었습니다.");
                     fcmService.sendMessageToCouncil("조직 가입 요청이 있습니다.", "학생 " + userId);
                 }
@@ -131,7 +134,12 @@ public class RedisStreamConsumer implements StreamListener<String, MapRecord<Str
 
                     if (requestObj instanceof Map<?, ?> requestMap) {
                         String applicantId = requestMap.get("applicantId").toString();
-                        log.info("어디가 찍히는????");
+                        log.info("   - applicantId: {}", applicantId);
+
+                        if (memberService.getStatus(applicantId) == Status.PENDING){
+                            log.info("status를 approve로 바꿈");
+                            memberService.approve(applicantId);
+                        }
                         fcmService.sendMessageToUser(applicantId, applicantId + " 님", "조직 가입 요청이 승인되었습니다.");
                     } else {
                         log.warn("[ request 형식을 알 수 없음 ]: {}", requestObj.getClass().getName());
@@ -141,13 +149,19 @@ public class RedisStreamConsumer implements StreamListener<String, MapRecord<Str
                     Map<String, Object> resultData = objectMapper.readValue(result, Map.class);
                     log.info("❌ 멤버십 거절 완료");
                     log.info("   - 결과: {}", resultData);
+
                     Object requestObj = resultData.get("request");
                     log.info("   - request: {}", requestObj);
 
                     if (requestObj instanceof Map<?, ?> requestMap) {
-                        String rejectorId = requestMap.get("rejectorId").toString();
-                        log.info("어디가 찍히는");
-                        fcmService.sendMessageToUser(rejectorId, rejectorId + " 님", "조직 가입 요청이 승인되었습니다.");
+                        String applicantId = requestMap.get("applicantId").toString();
+                        log.info("   - applicantId: {}", applicantId);
+
+                        if (memberService.getStatus(applicantId) == Status.PENDING){
+                            log.info("status를 reject로 바꿈");
+                            memberService.reject(applicantId);
+                        }
+                        fcmService.sendMessageToUser(applicantId, applicantId + " 님", "조직 가입 요청이 승인되었습니다.");
                     } else {
                         log.warn("[ request 형식을 알 수 없음 ]: {}", requestObj.getClass().getName());
                     }
@@ -331,6 +345,11 @@ public class RedisStreamConsumer implements StreamListener<String, MapRecord<Str
     private String splitId(String ledgerEntryId) {
         String[] s = ledgerEntryId.split("_");
         return s[2];
+    }
+
+    private String splitRequestId(String requestId) {
+        String[] s = requestId.split("_");
+        return s[3];
     }
 
     private void handleErrorResponse(String requestType, String originalRecordId,

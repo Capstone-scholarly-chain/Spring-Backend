@@ -1,9 +1,9 @@
 package Baeksa.money.domain.student.controller;
 
 
+import Baeksa.money.domain.streams.dto.StreamReqDto;
 import Baeksa.money.domain.streams.service.RedisStreamProducer;
 import Baeksa.money.domain.student.dto.StudentDto;
-import Baeksa.money.domain.student.service.StudentPublisher;
 import Baeksa.money.domain.student.service.StudentService;
 import Baeksa.money.global.config.swagger.ApiErrorCodeExample;
 import Baeksa.money.global.excepction.code.BaseApiResponse;
@@ -13,11 +13,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.connection.stream.RecordId;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 @Slf4j
 @RestController
@@ -40,27 +39,32 @@ public class StudentController {
 //        return ResponseEntity.ok(new BaseApiResponse<>(200, "PUBSUB-MEMBERSHIP", "학생 가입 신청", map));
 //    }
 
-//    //프론트는 Theme, amount, description, documentURL만 넘겨주면 됨
-//    @Operation(summary = "학생이 입금 기입 요청을 보냄 - 학생 화면")
-//    @ApiErrorCodeExample(value = ErrorCode.class, include = {"STUDENT_NOTFOUND", "STUDENT_APPLY_LEDGER"})
-//    @PostMapping("/ledger")
-//    public ResponseEntity<?> ledger(@AuthenticationPrincipal CustomUserDetails userDetails,
-//                                    @RequestBody StudentDto.LedgerDto ledgerDto){
-//
-////        redisStreamProducer.sendMessage()
-////        Map<String, Object> map = studentPublisher.applyLedger(userDetails.getStudentId(), ledgerDto);
-//        return ResponseEntity.ok(new BaseApiResponse<>(200, "STUDENT_APPLY_LEDGER", "학생 입금 기입 요청", map));
-//    }
-//
-//    @ApiErrorCodeExample(value = ErrorCode.class, include = {"STUDENT_APPROVE_WITHDRAW"})
-//    @Operation(summary = "학생 출금 승인 - 학생 화면")
-//    @PostMapping("vote-withdraw")
-//    public ResponseEntity<?> approve(@AuthenticationPrincipal CustomUserDetails userDetails,
-//                                     @RequestBody StudentDto.VoteDto dto){
-//
+    //프론트는 Theme, amount, description, documentURL만 넘겨주면 됨
+    @Operation(summary = "학생이 입금 기입 요청을 보냄 - 학생 화면")
+    @ApiErrorCodeExample(value = ErrorCode.class, include = {"STUDENT_NOTFOUND", "STUDENT_APPLY_LEDGER"})
+    @PostMapping("/deposit")
+    public ResponseEntity<?> deposit(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                    @RequestBody StudentDto.LedgerDto ledgerDto){
+
+        RecordId recordId = redisStreamProducer.sendMessage(new StreamReqDto.streamLedgerDto(userDetails.getStudentId(), ledgerDto.getTheme(), ledgerDto.getAmount(),
+                ledgerDto.getDescription(), ledgerDto.getDocumentURL()), "ADD_DEPOSIT");
+//        Map<String, Object> map = studentPublisher.applyLedger(userDetails.getStudentId(), ledgerDto);
+        return ResponseEntity.ok(new BaseApiResponse<>(200, "STUDENT_APPLY_LEDGER", "학생 입금 기입 요청", recordId));
+    }
+
+    @ApiErrorCodeExample(value = ErrorCode.class, include = {"STUDENT_APPROVE_WITHDRAW"})
+    @Operation(summary = "학생 출금 승인 - 학생 화면")
+    @PostMapping("vote-withdraw")
+    public ResponseEntity<?> voteWithdraw(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                     @RequestBody StudentDto.VoteDto dto){
+        // 투표한 사람, 찬성/반대, 출금 승인 구분할 수 있는 LedgerEntryId
+        // 투표한 사람 넣었는지?
+        RecordId recordId = redisStreamProducer.sendMessage(
+                new StudentDto.VoteDto(userDetails.getStudentId(), dto.isVote(), dto.getLedgerEntryId()),
+                "VOTE_WITHDRAW");
 //        Map<String, Object> map = studentPublisher.voteWithdraw(userDetails.getStudentId(), dto);
-//        return ResponseEntity.ok(new BaseApiResponse<>(200, "STUDENT_VOTE_WITHDRAW", "출금 기입 투표 승인/거절", map));
-//    }
+        return ResponseEntity.ok(new BaseApiResponse<>(200, "VOTE_WITHDRAW", "출금 기입 투표 승인/거절", recordId));
+    }
 
 
     @ApiErrorCodeExample(value = ErrorCode.class, include = {""})

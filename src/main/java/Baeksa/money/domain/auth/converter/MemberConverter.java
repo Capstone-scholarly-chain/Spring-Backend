@@ -45,7 +45,9 @@ public class MemberConverter {
                 .studentId(entity.getStudentId())
                 .role(entity.getRole())
                 .status(entity.getStatus())
-                .timestamp(entity.getTimestamp())
+//                .timestamp(entity.getTimestamp())
+                .createdAt(entity.getCreatedAt())
+                .updatedAt(entity.getUpdatedAt())
                 .build();
     }
 

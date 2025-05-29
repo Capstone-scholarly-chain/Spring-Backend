@@ -1,17 +1,15 @@
 package Baeksa.money.domain.register.controller;
 
-import Baeksa.money.domain.register.RegisterDto;
+import Baeksa.money.domain.register.dto.RegisterDto;
 import Baeksa.money.domain.register.service.RegisterService;
 import Baeksa.money.global.config.swagger.ApiErrorCodeExample;
 import Baeksa.money.global.excepction.code.BaseApiResponse;
 import Baeksa.money.global.excepction.code.ErrorCode;
-import Baeksa.money.global.jwt.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

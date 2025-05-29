@@ -25,6 +25,7 @@ public class StudentDto {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class VoteDto {
+        private String voterId;
         private boolean vote;
         private String ledgerEntryId;
     }

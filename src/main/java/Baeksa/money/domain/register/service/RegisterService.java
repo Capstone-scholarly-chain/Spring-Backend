@@ -1,6 +1,6 @@
 package Baeksa.money.domain.register.service;
 
-import Baeksa.money.domain.committee.service.RequestResponseTracker;
+import Baeksa.money.global.redis.service.RequestResponseTracker;
 import Baeksa.money.domain.streams.service.RedisStreamProducer;
 import Baeksa.money.global.excepction.CustomException;
 import Baeksa.money.global.excepction.code.ErrorCode;

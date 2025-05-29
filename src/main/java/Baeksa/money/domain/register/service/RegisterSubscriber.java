@@ -1,10 +1,7 @@
 package Baeksa.money.domain.register.service;
 
 //import Baeksa.money.domain.committee.event2.StudentCountResponseEvent;
-import Baeksa.money.domain.committee.service.RequestResponseTracker;
-import Baeksa.money.domain.register.eventResponses.RegisterApproveResponse;
-import Baeksa.money.domain.register.eventResponses.RegisterRejectResponse;
-import Baeksa.money.domain.register.eventResponses.RegisterResponseEvent;
+import Baeksa.money.global.redis.service.RequestResponseTracker;
 import Baeksa.money.global.redis.eventResponses.GetResponseEvent;
 import Baeksa.money.global.redis.eventResponses.OriginResponseEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;

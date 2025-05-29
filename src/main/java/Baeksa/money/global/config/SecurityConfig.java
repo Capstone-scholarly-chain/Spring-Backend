@@ -46,7 +46,8 @@ public class SecurityConfig {
             "api/fcm/**",
             "api/ledger/**",
             "api/committee/**",
-            "api/student/**"
+            "api/student/**",
+            "api/s3/**"
     };
 
     @Bean

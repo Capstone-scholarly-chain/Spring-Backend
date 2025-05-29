@@ -1,12 +1,9 @@
 package Baeksa.money.domain.ledger.controller;
 
-import Baeksa.money.domain.ledger.Semester;
+import Baeksa.money.domain.ledger.enums.Semester;
 import Baeksa.money.domain.ledger.dto.ThemeReqDto;
 import Baeksa.money.domain.ledger.dto.ThemeResDto;
-import Baeksa.money.domain.ledger.entity.Theme;
-import Baeksa.money.domain.ledger.service.LedgerPubService;
 import Baeksa.money.domain.ledger.service.LedgerService;
-import Baeksa.money.domain.ledger.dto.PendingDepositDto;
 import Baeksa.money.domain.ledger.dto.VoteDto;
 import Baeksa.money.domain.ledger.service.ThemeService;
 import Baeksa.money.global.config.swagger.ApiErrorCodeExample;
@@ -31,7 +28,7 @@ public class LedgerController {
     private final ThemeService themeService;
 
     @Operation(summary = "테마 생성")
-    @PostMapping("/theme")
+    @PostMapping("/create-theme")
     public ResponseEntity<?> theme(@RequestBody ThemeReqDto.createThemeDto dto){
 
         ThemeResDto themeResDto = themeService.create(dto);

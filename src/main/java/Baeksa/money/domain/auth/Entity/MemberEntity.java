@@ -3,6 +3,7 @@ package Baeksa.money.domain.auth.Entity;
 
 import Baeksa.money.domain.auth.enums.Role;
 import Baeksa.money.domain.auth.enums.Status;
+import Baeksa.money.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -19,7 +20,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EntityListeners(AuditingEntityListener.class)
 @Builder
-public class MemberEntity {
+public class MemberEntity extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -43,13 +44,13 @@ public class MemberEntity {
     @Column(name = "status", nullable = false)
     private Status status = Status.PENDING;
 
-    @CreatedDate
-    @Column(name = "timestamp")
-    private LocalDateTime timestamp;
-
-    @LastModifiedDate
-    @Column(name = "update_at")
-    private LocalDateTime updateAt;
+//    @CreatedDate
+//    @Column(name = "timestamp")
+//    private LocalDateTime timestamp;
+//
+//    @LastModifiedDate
+//    @Column(name = "update_at")
+//    private LocalDateTime updateAt;
 
 
     public static MemberEntity fromToken(String studentId, Role role) {

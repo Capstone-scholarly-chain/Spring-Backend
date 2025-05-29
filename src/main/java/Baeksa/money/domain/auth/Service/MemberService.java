@@ -6,6 +6,7 @@ import Baeksa.money.domain.auth.Entity.MemberEntity;
 import Baeksa.money.domain.auth.Repository.MemberRepository;
 import Baeksa.money.domain.auth.converter.MemberConverter;
 import Baeksa.money.domain.auth.enums.Role;
+import Baeksa.money.domain.auth.enums.Status;
 import Baeksa.money.global.excepction.CustomException;
 import Baeksa.money.global.excepction.code.ErrorCode;
 import Baeksa.money.global.jwt.JWTUtil;
@@ -55,6 +56,11 @@ public class MemberService {
         return memberRepository.save(memberEntity);
     }
 
+    public Status getStatus(String studentId){
+        Optional<MemberEntity> Op = memberRepository.findByStudentId(studentId);
+        MemberEntity member = Op.get();
+        return member.getStatus();
+    }
 
     @Transactional
     public void approve(String studentId) {

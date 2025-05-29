@@ -57,8 +57,8 @@ public class MemberDto {
         private String studentId;
         private Role role; // enum 등
         private Status status;
-        private LocalDateTime timestamp;
-        private LocalDateTime updateAt;
+        private LocalDateTime createdAt;
+        private LocalDateTime updatedAt;
     }
 
     @Data

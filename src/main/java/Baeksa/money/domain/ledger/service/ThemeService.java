@@ -1,8 +1,8 @@
 package Baeksa.money.domain.ledger.service;
 
-import Baeksa.money.domain.ledger.Semester;
-import Baeksa.money.domain.ledger.ThemeConverter;
-import Baeksa.money.domain.ledger.ThemeRepository;
+import Baeksa.money.domain.ledger.enums.Semester;
+import Baeksa.money.domain.ledger.converter.ThemeConverter;
+import Baeksa.money.domain.ledger.repo.ThemeRepository;
 import Baeksa.money.domain.ledger.dto.ThemeReqDto;
 import Baeksa.money.domain.ledger.dto.ThemeResDto;
 import Baeksa.money.domain.ledger.entity.Theme;
@@ -40,22 +40,6 @@ public class ThemeService {
 
         return themeConverter.convertThemeToDto(savedTheme);
     }
-
-//    public ThemeResDto create(ThemeReqDto.createThemeDto createThemeDto) {
-//
-//        Optional<Theme> themeOpt = themeRepository.findByThemeName(createThemeDto.getThemeName());
-//        if (themeOpt.isPresent()) {
-//            Theme existingTheme = themeOpt.get();
-//            if (existingTheme.getYear() == createThemeDto.getYear()
-//                    && existingTheme.isSemester() == createThemeDto.isSemester()) {
-//                throw new CustomException(ErrorCode.DUPLICATED_THEME);
-//            }
-//        }
-//        Theme savedTheme = themeConverter.convertDtoToTheme(createThemeDto);
-//        savedTheme = themeRepository.save(savedTheme); // 여기서 DB에 반영된 createdAt 포함
-//
-//        return themeConverter.convertThemeToDto(savedTheme);
-//    }
 
     public List<ThemeResDto> searchThemes(String themeName, Integer year, Semester semester) {
         try {

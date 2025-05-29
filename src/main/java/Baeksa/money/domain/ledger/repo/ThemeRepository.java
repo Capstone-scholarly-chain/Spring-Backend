@@ -1,5 +1,6 @@
-package Baeksa.money.domain.ledger;
+package Baeksa.money.domain.ledger.repo;
 
+import Baeksa.money.domain.ledger.enums.Semester;
 import Baeksa.money.domain.ledger.entity.Theme;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

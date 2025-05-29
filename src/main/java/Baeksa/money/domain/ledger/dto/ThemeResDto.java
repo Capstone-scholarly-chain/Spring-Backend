@@ -1,6 +1,6 @@
 package Baeksa.money.domain.ledger.dto;
 
-import Baeksa.money.domain.ledger.Semester;
+import Baeksa.money.domain.ledger.enums.Semester;
 import lombok.*;
 
 import java.time.LocalDateTime;

@@ -1,6 +1,7 @@
 package Baeksa.money.domain.ledger.entity;
 
-import Baeksa.money.domain.ledger.Semester;
+import Baeksa.money.domain.ledger.enums.Semester;
+import Baeksa.money.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -15,7 +16,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EntityListeners(AuditingEntityListener.class)
 @Builder
-public class Theme {
+public class Theme extends BaseEntity {
     //연도랑 학기를 드롭다운 (상단에 필터링)
     //테마를 죽 나열
     @Id

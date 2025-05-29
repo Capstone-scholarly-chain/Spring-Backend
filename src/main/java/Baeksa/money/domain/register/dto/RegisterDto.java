@@ -1,4 +1,4 @@
-package Baeksa.money.domain.register;
+package Baeksa.money.domain.register.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
