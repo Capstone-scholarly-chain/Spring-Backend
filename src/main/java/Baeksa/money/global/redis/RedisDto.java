@@ -27,12 +27,4 @@ public class RedisDto {
         @JsonProperty("refresh_token")
         private final String refresh_token;
     }
-
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor(force = true, access = AccessLevel.PRIVATE)
-    public static class MessageDto{
-        private String channel;
-        private Map<String, Object> message;
-    }
 }
