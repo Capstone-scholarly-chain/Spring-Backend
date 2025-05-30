@@ -246,24 +246,35 @@ public class RedisStreamConsumer implements StreamListener<String, MapRecord<Str
                 }
 
 
+                case "GET_MY_LEDGER" -> {
+                    log.info("나의 내역 조회 완료");
+                    List<Map<String, Object>> myList = objectMapper.readValue(
+                            result, new TypeReference<List<Map<String, Object>>>() {});
+                    log.info("나의 내역 조회 요청 완료: {}", requestType);
+                    log.info("   - 결과: {}", myList);
 
+                    requestTracker.markRequestCompleted(originalRecordId);
+                    log.info("나의 내역 조회 완료 처리: {}", originalRecordId);
+                }
                 case "GET_STUDENT_COUNT", "GET_COUNCIL_COUNT" -> {
                     Map<String, Object> resultData = objectMapper.readValue(result, Map.class);
-                    log.info("📊 조회 요청 완료: {}", requestType);
+                    log.info("조회 요청 완료: {}", requestType);
                     log.info("   - 결과: {}", resultData);
                     String count = resultData.get("result").toString();
                     log.info("   - count: {}", count);
 
                     requestTracker.markRequestCompleted(originalRecordId);
-                    log.info("🎯 학생 수 요청 완료 처리: {}", originalRecordId);
+                    log.info("학생 수 요청 완료 처리: {}", originalRecordId);
                 }
                 case "GET_PENDING_REQUESTS" -> {
-                    log.info("대기중인 요청 조회 완료");
-                    Map<String, Object> resultData = objectMapper.readValue(result, Map.class);
-                    log.info("   - 결과: {}", resultData);
+                    log.info("대기중인 모든 조직가입 요청 조회 완료");
+                    List<Map<String, Object>> pendingRequestsList = objectMapper.readValue(
+                            result, new TypeReference<List<Map<String, Object>>>() {});
+                    log.info("대기중인 모든 조직가입 요청 완료: {}", requestType);
+                    log.info("   - 결과: {}", pendingRequestsList);
 
                     requestTracker.markRequestCompleted(originalRecordId);
-                    log.info("🎯 대기중인 요청 조회 완료 처리: {}", originalRecordId);
+                    log.info("대기중인 요청 조회 완료 처리: {}", originalRecordId);
                 }
                 case "GET_REQUEST_STATUS" -> {
                     log.info("특정 id 상태 조회 완료");
@@ -274,7 +285,7 @@ public class RedisStreamConsumer implements StreamListener<String, MapRecord<Str
                     log.info("   - status: {}", status);
 
                     requestTracker.markRequestCompleted(originalRecordId);
-                    log.info("🎯 학생 수 요청 완료 처리: {}", originalRecordId);
+                    log.info("학생 수 요청 완료 처리: {}", originalRecordId);
                 }
                 case "GET_PENDING_DEPOSITS" -> {
                     log.info("GET_PENDING_DEPOSITS");
@@ -283,7 +294,7 @@ public class RedisStreamConsumer implements StreamListener<String, MapRecord<Str
                     log.info("   - 결과: {}", depositList);
 
                     requestTracker.markRequestCompleted(originalRecordId);
-                    log.info("🎯 GET_PENDING_DEPOSITS 완료 처리: {}", originalRecordId);
+                    log.info("GET_PENDING_DEPOSITS 완료 처리: {}", originalRecordId);
                 }
                 case "GET_PENDING_WITHDRAW" -> {
                     log.info("GET_PENDING_WITHDRAW");
@@ -292,7 +303,7 @@ public class RedisStreamConsumer implements StreamListener<String, MapRecord<Str
                     log.info("   - 결과: {}", depositList);
 
                     requestTracker.markRequestCompleted(originalRecordId);
-                    log.info("🎯 GET_PENDING_WITHDRAW 완료 처리: {}", originalRecordId);
+                    log.info("GET_PENDING_WITHDRAW 완료 처리: {}", originalRecordId);
                 }
                 case "GET_VOTE_STATUS" -> {
                     log.info("GET_VOTE_STATUS");
@@ -302,7 +313,7 @@ public class RedisStreamConsumer implements StreamListener<String, MapRecord<Str
 //                    String status = resultData.get("status").toString();
 //                    log.info("   - status: {}", status);
                     requestTracker.markRequestCompleted(originalRecordId);
-                    log.info("🎯 투표 진행 조회 완료 처리: {}", originalRecordId);
+                    log.info("투표 진행 조회 완료 처리: {}", originalRecordId);
 
                     //
                 }
@@ -312,7 +323,7 @@ public class RedisStreamConsumer implements StreamListener<String, MapRecord<Str
                     log.info("조회 요청 완료: {}", requestType);
                     log.info("   - 결과: {}", resultData);
                     requestTracker.markRequestCompleted(originalRecordId);
-                    log.info("🎯 하나의 테마 조회 완료 처리: {}", originalRecordId);
+                    log.info("하나의 테마 조회 완료 처리: {}", originalRecordId);
 
                 }
                 case "GET_ALL_THEME_BALANCE" -> {

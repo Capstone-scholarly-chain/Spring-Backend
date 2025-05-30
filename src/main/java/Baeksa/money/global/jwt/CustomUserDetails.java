@@ -1,6 +1,8 @@
 package Baeksa.money.global.jwt;
 
 import Baeksa.money.domain.auth.Entity.MemberEntity;
+import Baeksa.money.domain.auth.enums.Role;
+import Baeksa.money.domain.auth.enums.Status;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -38,6 +40,14 @@ public class CustomUserDetails implements UserDetails {
 
     public String getStudentId() {
         return memberEntity.getStudentId();
+    }
+
+    public Role getRole(){
+        return memberEntity.getRole();
+    }
+
+    public Status getStatus(){
+        return memberEntity.getStatus();
     }
 
     @Override

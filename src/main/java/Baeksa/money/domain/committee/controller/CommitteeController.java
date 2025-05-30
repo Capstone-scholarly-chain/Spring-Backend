@@ -1,5 +1,6 @@
 package Baeksa.money.domain.committee.controller;
 
+import Baeksa.money.domain.auth.anotation.ApprovedOnly;
 import Baeksa.money.domain.committee.dto.CommitteeDto;
 import Baeksa.money.domain.committee.service.CommitteeService;
 import Baeksa.money.domain.s3.service.S3Service;
@@ -19,12 +20,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-//EXPIRED_TOKEN(HttpStatus.BAD_REQUEST, "JWT_001", "refreshToken이 만료되었습니다."),
-//INVALID_TOKEN(HttpStatus.BAD_REQUEST, "JWT_002", "refreshToken이 유효하지 않습니다."),
-//TOKEN_NOTFOUND(HttpStatus.NOT_FOUND, "JWT_003", "refreshToken이 없습니다."),
-//INVALID_ID(HttpStatus.BAD_REQUEST, "JWT_004", "학번이 잘못되었습니다."),
-//BLACKLISTED(HttpStatus.BAD_REQUEST, "JWT_005", "blacklist처리된 access 토큰"),
-//INVALID_ACCESS(HttpStatus.BAD_REQUEST, "JWT_006", "accessToken이 유효하지 않습니다."),
 @Slf4j
 @RestController
 @RequestMapping("/api/committee")
@@ -34,13 +29,11 @@ public class CommitteeController {
 
     private final CommitteeService committeeService;
     private final RedisStreamProducer redisStreamProducer;
-    private final S3Service s3Service;
 
-    //    @Operation(description = "학생회 가입 신청 - 학생회 화면") 없앰
-// 학생회가 가입 신청하면 학생회가 승인/거절한다고..
     @Operation(summary = "가입 승인 - 학생회화면", description = "학생/학생회가 가입 신청하면 학생회 1명이 승인 '\' " +
             "REQ_STUDENT_TIMESTAMP_학번 '\' " + "REQ_COUNCIL_TIMESTAMP_학번")
     @ApiErrorCodeExample(value = ErrorCode.class, include = {"INVALID_APPROVAL", "COMMITTEE_APPROVE"})
+    @ApprovedOnly
     @PatchMapping("/approve")
     public ResponseEntity<?> approve(@RequestBody CommitteeDto.approveDto approveDto,
                                      @AuthenticationPrincipal CustomUserDetails userDetails){
@@ -53,6 +46,7 @@ public class CommitteeController {
     @ApiErrorCodeExample(value = ErrorCode.class, include = {"INVALID_APPROVAL", "COMMITTEE_REJECT"})
     @Operation(summary = "가입 거절 - 학생회화면", description = "학생/학생회가 가입 신청하면 학생회 1명이 거절 '\' " +
             "REQ_STUDENT_TIMESTAMP_학번 '\' " + "REQ_COUNCIL_TIMESTAMP_학번")
+    @ApprovedOnly
     @PatchMapping("/reject")
     public ResponseEntity<?> reject(@RequestBody CommitteeDto.rejectDto rejectDto,
                                     @AuthenticationPrincipal CustomUserDetails userDetails){
@@ -64,6 +58,7 @@ public class CommitteeController {
 
     @ApiErrorCodeExample(value = ErrorCode.class, include = {"COMMITTEE_APPROVE_DEPOSIT"})
     @Operation(summary = "입금 승인 - 학생회 화면", description = "학생이 신청한 입금에 대한 학생회 1명이 승인")
+    @ApprovedOnly
     @PostMapping("/approve-deposit")
     public ResponseEntity<?> deposit(@AuthenticationPrincipal CustomUserDetails userDetails,
                                      @RequestBody StudentDto.ledgerApproveDto dto){
@@ -75,6 +70,7 @@ public class CommitteeController {
 
     @ApiErrorCodeExample(value = ErrorCode.class, include = {"COMMITTEE_REJECT_DEPOSIT"})
     @Operation(summary = "입금 거절 - 학생회 화면", description = "학생이 신청한 입금에 대한 학생회 1명이 거절")
+    @ApprovedOnly
     @PostMapping("/reject-deposit")
     public ResponseEntity<?> rejectDeposit(@AuthenticationPrincipal CustomUserDetails userDetails,
                                            @RequestBody StudentDto.ledgerRejectDto dto){
@@ -87,15 +83,16 @@ public class CommitteeController {
 
 
     @ApiErrorCodeExample(value = ErrorCode.class, include = {"STUDENT_NOTFOUND", "COMMITTEE_WITHDRAW"})
-    @Operation(summary = "학생회 출금 기입 신청 - 학생회 화면")
+    @Operation(summary = "학생회가 출금 기입 신청 - 학생회 화면")
+    @ApprovedOnly
     @PostMapping("/withdraw")
     public ResponseEntity<?> withdraw(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                      @RequestBody CommitteeDto.LedgerDto ledgerDto) {
+                                      @RequestBody CommitteeDto.LedgerReqDto ledgerDto) {
 
         // ledgerDto.getDocumentURL()에는 이미 업로드 완료된 S3 파일 URL이 들어있음
-        // 내가 하는게 아니다
+        String themeId = ledgerDto.getTheme() + "_" + ledgerDto.getYear() + "_" + ledgerDto.getSemester();
         RecordId recordId = redisStreamProducer.sendMessage(
-                new StreamReqDto.streamLedgerDto(userDetails.getStudentId(), ledgerDto.getTheme(), ledgerDto.getAmount(),
+                new StreamReqDto.streamLedgerDto(userDetails.getStudentId(), themeId, ledgerDto.getAmount(),
                         ledgerDto.getDescription(), ledgerDto.getDocumentURL()), "ADD_WITHDRAW");
         return ResponseEntity.ok(new BaseApiResponse<>(200, "ADD_WITHDRAW", "학생회 출금 기입 요청", recordId));
     }
@@ -103,6 +100,7 @@ public class CommitteeController {
 
     @ApiErrorCodeExample(value = ErrorCode.class, include = {""})
     @Operation(summary = "학생회 수 조회")
+    @ApprovedOnly
     @GetMapping("/counts")
     public ResponseEntity<?> getCommitteeCount(){
 

@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -25,6 +26,7 @@ import java.util.logging.Filter;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -40,14 +42,6 @@ public class SecurityConfig {
             "/v3/api-docs/**",
             "/swagger-ui/**",
             "/swagger-ui.html",
-            "/api/pubsub/**",
-            "/signup-test",
-            "/streams/**",
-            "api/fcm/**",
-            "api/ledger/**",
-            "api/committee/**",
-            "api/student/**",
-            "api/s3/**"
     };
 
     @Bean
@@ -73,8 +67,8 @@ public class SecurityConfig {
                         authorizeRequests
                                 //아래 url은 인증 필요하지 않음
                                 .requestMatchers(allowUrl).permitAll()
-                                .requestMatchers("/api/pubsub/student/**").hasAnyRole("STUDENT", "ADMIN")
-                                .requestMatchers("/api/pubsub/committee/**").hasAnyRole("COMMITTEE", "ADMIN")
+                                .requestMatchers("/api/student/**").hasAnyRole("STUDENT", "ADMIN")
+                                .requestMatchers("/api/committee/**").hasAnyRole("COMMITTEE", "ADMIN")
                                 .requestMatchers("/api/**").authenticated()
                 );
 

@@ -27,6 +27,8 @@ public class StudentService {
     private static final int REQUEST_TIMEOUT_SECONDS = 3;
 
 
+    // 테마 검증
+
 
     // 학생 수 조회
     public String findStudentCount() {
@@ -82,41 +84,5 @@ public class StudentService {
         }
     }
 }
-//    /// 조회할 데이터가 없을 때
-//    private Integer requestStudentCount() throws InterruptedException {
-//        // 요청 식별자 생성
-//        String requestId = UUID.randomUUID().toString();
-//
-//        // 요청 등록
-//        CountDownLatch latch = requestTracker.registerRequest(requestId);
-//
-//        try {
-//            // Redis에 직접 메시지 발행
-//            String message = "학생 수 요청:" + requestId;
-//            redisTemplate.convertAndSend(STUDENT_COUNT_CHANNEL, message);
-//            log.debug("학생 수 요청 발행: {}", requestId);
-//
-//            // 응답 대기
-//            boolean receivedInTime = latch.await(REQUEST_TIMEOUT_SECONDS, TimeUnit.SECONDS);
-//
-//            // 응답 확인
-//            if (!receivedInTime || !requestTracker.isRequestSuccessful(requestId)) {
-//                log.warn("학생 수 응답 타임아웃: {}", requestId);
-//                throw new CustomException(ErrorCode.STUDENT_COUNT_TIMEOUT);
-//            }
-//
-//            // 응답을 받았으면 Redis에서 다시 조회
-//            Integer count = redisTemplateInteger.opsForValue().get(STUDENT_COUNT_KEY);
-//            if (count == null) {
-//                log.warn("학생 수 응답 후에도 값이 없음: {}", requestId);
-//                throw new CustomException(ErrorCode.STUDENT_COUNT_NOT_AVAILABLE);
-//            }
-//
-//            log.debug("학생 수 조회 성공: {}", count);
-//            return count;
-//        } finally {
-//            // 완료된 요청 정리
-//            requestTracker.cleanupRequest(requestId);
-//        }
-//    }
+
 

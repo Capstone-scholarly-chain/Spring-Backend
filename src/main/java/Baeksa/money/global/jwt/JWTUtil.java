@@ -1,5 +1,6 @@
 package Baeksa.money.global.jwt;
 
+import Baeksa.money.domain.auth.enums.Status;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtException;
@@ -22,12 +23,13 @@ public class JWTUtil {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String createJwt(String category, String studentId, String username, String role, Long expiredMs) {
+    public String createJwt(String category, String studentId, String username, String role, String status, Long expiredMs) {
         return Jwts.builder()
                 .claim("category", category)
                 .claim("studentId", studentId)
                 .claim("username", username)
                 .claim("role", role)
+                .claim("status", status)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + expiredMs))
                 .signWith(secretKey)
@@ -69,6 +71,15 @@ public class JWTUtil {
                 .parseClaimsJws(token)
                 .getBody()
                 .get("category", String.class);
+    }
+
+    public String getStatus(String token){
+        return Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("status", String.class);
     }
 
     public Boolean isExpired(String token) {

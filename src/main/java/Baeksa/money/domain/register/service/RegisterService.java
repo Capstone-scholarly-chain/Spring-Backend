@@ -35,9 +35,8 @@ public class RegisterService {
     // 대기 중인 가입 요청 조회
 public List<Map<String, Object>> getPendingRequests() {
     try {
-        // 🔥 Redis에서 JSON 문자열로 저장된 데이터 조회
+        // Redis에서 JSON 문자열로 저장된 데이터 조회
         String cachedData = redisTemplate.opsForValue().get(PENDING_REGISTER_KEY);
-        log.info("이건읽냐");
 
         if (cachedData != null && !cachedData.isEmpty()) {
             try {
@@ -46,26 +45,26 @@ public List<Map<String, Object>> getPendingRequests() {
                         cachedData,
                         new TypeReference<List<Map<String, Object>>>() {}
                 );
-                log.info("캐시에서 대기중인 입금 요청 조회: {} 건", result.size());
+                log.info("대기중인 모든 조직가입 조회: {} 건", result.size());
                 return result;
             } catch (Exception e) {
-                log.warn("캐시된 입금 요청 데이터 파싱 실패, 재요청: {}", e.getMessage());
+                log.warn("대기중인 모든 조직가입 데이터 파싱 실패, 재요청: {}", e.getMessage());
                 redisTemplate.delete(PENDING_REGISTER_KEY); // 잘못된 데이터 삭제
             }
         }
 
         // 캐시에 없거나 파싱 실패 시 NestJS에 요청
-        log.info("캐시에 대기중인 입금 요청 없음, NestJS에 요청");
+        log.info("대기중인 모든 조직가입 없음, NestJS에 요청");
         return requestPendingRequests();
 
     } catch (Exception e) {
-        log.error("대기중인 입금 항목 조회 실패", e);
+        log.error("대기중인 모든 조직가입 실패", e);
         throw new CustomException(ErrorCode.PENDING_DEPOSIT_FETCH_FAILED);
     }
 }
 
     private List<Map<String, Object>> requestPendingRequests() throws InterruptedException, JsonProcessingException {
-        String recordId = redisStreamProducer.sendMessage("대기중인 입금 요청", "GET_PENDING_REQUESTS").toString();
+        String recordId = redisStreamProducer.sendMessage("대기중인 모든 멤버십", "GET_PENDING_REQUESTS").toString();
         CountDownLatch latch = requestTracker.registerRequest(recordId);
 
         try {

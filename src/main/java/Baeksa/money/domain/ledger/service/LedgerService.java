@@ -246,30 +246,69 @@ public class LedgerService {
 
 
 
+//GET_MY_LEDGER
+//키: ledger:mylist:  학번
+    public List<Map<String, Object>> getMyList(String userId) {
+        try {
+            String cachedData = redisTemplate.opsForValue().get("ledger:mylist:" + userId);
 
+            if (cachedData != null && !cachedData.isEmpty()) {
+                try {
+                    // JSON 문자열을 List<Map>으로 파싱
+                    List<Map<String, Object>> result = objectMapper.readValue(
+                            cachedData,
+                            new TypeReference<List<Map<String, Object>>>() {}
+                    );
+                    log.info("나의 내역 조회: {} 건", result.size());
+                    return result;
+                } catch (Exception e) {
+                    log.warn("나의 내역 데이터 파싱 실패, 재요청: {}", e.getMessage());
+                    redisTemplate.delete("ledger:mylist:"); // 잘못된 데이터 삭제
+                }
+            }
 
-    public List<Map<String, Object>> getMyList2(String studentId) {
-        Set<String> keys = redisTemplate.keys("*" + studentId + "*");
-        List<Map<String, Object>> result = new ArrayList<>();
-        for (String key : keys) {
-            String value;
-            try {
-                value = redisTemplate.opsForValue().get(key);
-            } catch (Exception e) {
-                throw new CustomException(ErrorCode.MY_HISTORY_FETCH_FAILED);
-            }
-            try {
-                Map<String, Object> map = objectMapper.readValue(
-                        value,
-                        new TypeReference<Map<String, Object>>() {}
-                );
-                result.add(map);
-            } catch (JsonProcessingException e) {
-                log.warn("JSON 파싱 실패. key: {}, value: {}", key, value);
-                throw new CustomException(ErrorCode.JSON_FAILED);
-            }
+            // 캐시에 없거나 파싱 실패 시 NestJS에 요청
+            log.info("나의 내역 없음, NestJS에 요청");
+            return requestMyList(userId);
+
+        } catch (Exception e) {
+            log.error("나의 내역 조회 실패", e);
+            throw new CustomException(ErrorCode.MY_HISTORY_FETCH_FAILED);
         }
-        return result;
+    }
+
+    private List<Map<String, Object>> requestMyList(String userId) throws InterruptedException, JsonProcessingException {
+        String recordId = redisStreamProducer.sendMessageUserId(userId, "GET_MY_LEDGER").toString();
+        CountDownLatch latch = requestTracker.registerRequest(recordId);
+
+        try {
+            log.info("나의 내역 발송: recordId={}", recordId);
+            boolean receivedInTime = latch.await(REQUEST_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+
+            if (!receivedInTime) {
+                log.warn("나의 내역 조회 응답 타임아웃: recordId={}", recordId);
+                throw new CustomException(ErrorCode.REQUEST_TIMEOUT);
+            }
+
+            if (!requestTracker.isRequestSuccessful(recordId)) {
+                log.warn("나의 내역 조회 실패: recordId={}", recordId);
+                throw new CustomException(ErrorCode.REQUEST_FAILED);
+            }
+
+            // 응답 데이터 조회
+            String data = redisTemplate.opsForValue().get("ledger:mylist:" + userId);
+
+            if (data == null) {
+                log.warn("나의 내역 조회 요청 후에도 데이터 없음: recordId={}", recordId);
+                return new ArrayList<>();
+            }
+
+            // JSON 문자열을 List<Map>으로 파싱
+            return objectMapper.readValue(data, new TypeReference<List<Map<String, Object>>>() {});
+
+        } finally {
+            requestTracker.cleanupRequest(recordId);
+        }
     }
 
 

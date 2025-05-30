@@ -1,5 +1,6 @@
 package Baeksa.money.domain.committee.dto;
 
+import Baeksa.money.domain.ledger.enums.Semester;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,8 +15,10 @@ public class CommitteeDto {
     @Getter
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class LedgerDto{
-        private String theme;
+    public static class LedgerReqDto{
+        private String theme;           //name_year_semester
+        private int year;
+        private Semester semester;
         private Long amount;
         private String description;
         private String documentURL;

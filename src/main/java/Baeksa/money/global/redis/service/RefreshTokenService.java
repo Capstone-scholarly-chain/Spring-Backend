@@ -3,21 +3,21 @@ package Baeksa.money.global.redis.service;
 import Baeksa.money.global.excepction.CustomException;
 import Baeksa.money.global.excepction.code.ErrorCode;
 import Baeksa.money.global.jwt.JWTUtil;
-import Baeksa.money.global.redis.RedisDto;
+import Baeksa.money.global.redis.dtos.RedisDto;
 import Baeksa.money.global.redis.RefreshToken;
 import Baeksa.money.global.redis.RefreshTokenRepository;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -40,10 +40,8 @@ public class RefreshTokenService {
     @Transactional
     public void logout(String studentId) {
         if (studentId != null) {
-            // ID가 null이 아닌 경우에만 삭제 작업을 진행
             refreshTokenRepository.deleteById(studentId);
         } else {
-            // ID가 null인 경우 적절한 예외 처리나 로그를 추가할 수 있음
             throw new CustomException(ErrorCode.INVALID_ID);
         }
     }
@@ -89,17 +87,24 @@ public class RefreshTokenService {
         String username = jwtUtil.getUsername(refresh.getRefresh_token());
         String studentId = jwtUtil.getStudentId(refresh.getRefresh_token());
         String role = jwtUtil.getRole(refresh.getRefresh_token());
+        String status = jwtUtil.getStatus(refresh.getRefresh_token());
 
-        return new RedisDto.TokenResponse(studentId, role, username);
+        return new RedisDto.TokenResponse(studentId, role, username, status);
     }
 
-    public ResponseEntity<?> reissue(HttpServletResponse response, RedisDto.TokenResponse tokenResponse) {
+    public void reissue(HttpServletResponse response, RedisDto.TokenResponse tokenResponse) {
         // 5. 기존 refresh삭제
         refreshTokenRepository.deleteById(tokenResponse.getStudentId());
 
+//        //캐싱 삭제
+//        userCacheService.evict(tokenResponse.getStudentId());
+//        userCacheService.getUserDetails(tokenResponse.getStudentId());  // 삭제 후 재캐싱
+
         // 6. 재발급
-        String newAccess = jwtUtil.createJwt("access_token", tokenResponse.getStudentId(), tokenResponse.getUsername(), tokenResponse.getRole(),600000L);
-        String newRefresh = jwtUtil.createJwt("refresh_token", tokenResponse.getStudentId(), tokenResponse.getUsername(), tokenResponse.getRole(),86400000L);
+        String newAccess = jwtUtil.createJwt("access_token", tokenResponse.getStudentId(), tokenResponse.getUsername(),
+                tokenResponse.getRole(), tokenResponse.getStatus(), 3600000L);
+        String newRefresh = jwtUtil.createJwt("refresh_token", tokenResponse.getStudentId(), tokenResponse.getUsername(),
+                tokenResponse.getRole(), tokenResponse.getStatus(), 86400000L);
 
         // 7. Redis 저장 (rotate)
         refreshTokenRepository.save(new RefreshToken(tokenResponse.getStudentId(), newRefresh));
@@ -108,22 +113,12 @@ public class RefreshTokenService {
         response.addCookie(createCookie("access_token", newAccess));
         response.addCookie(createCookie("refresh_token", newRefresh));
 
-        return ResponseEntity.ok("토큰 재발급 완료");
-    }
-
-
-    //access에서도 사용함 - JWTFilter
-    public String getCookieValue(Cookie[] cookies, String key) {
-        if (cookies == null) return null;
-        for (Cookie cookie : cookies) {
-            if (cookie.getName().equals(key)) return cookie.getValue();
-        }
-        return null;
+        log.info("토큰 재발행 완료");
     }
 
     public Cookie createCookie(String key, String value) {
         key = key.equals("access_token") ? "access_token" : "refresh_token";
-        int expiry = key.equals("access_token") ? (60 * 10) : (60 * 60 * 24);
+        int expiry = key.equals("access_token") ? (60 * 60) : (60 * 60 * 24);
 
         Cookie cookie = new Cookie(key, value);
         cookie.setMaxAge(expiry);

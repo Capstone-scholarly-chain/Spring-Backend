@@ -2,6 +2,7 @@ package Baeksa.money.domain.auth.converter;
 
 import Baeksa.money.domain.auth.Dto.MemberDto;
 import Baeksa.money.domain.auth.Entity.MemberEntity;
+import Baeksa.money.global.jwt.CustomUserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -45,11 +46,9 @@ public class MemberConverter {
                 .studentId(entity.getStudentId())
                 .role(entity.getRole())
                 .status(entity.getStatus())
-//                .timestamp(entity.getTimestamp())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();
     }
-
 }
 

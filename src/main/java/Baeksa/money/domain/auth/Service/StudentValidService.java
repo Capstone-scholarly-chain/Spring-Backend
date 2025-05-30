@@ -4,10 +4,12 @@ import Baeksa.money.domain.auth.Entity.StudentEntity;
 import Baeksa.money.domain.auth.Repository.StudentRepository;
 import Baeksa.money.domain.auth.enums.Role;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class StudentValidService {
@@ -25,13 +27,12 @@ public class StudentValidService {
             //학생이 존재하면 get으로 값을 꺼내고 여기 게터와 파라미터를 equals로 비교
             StudentEntity student = studentOptional.get();
 
-            System.out.println("✅ [DB] studentId: " + student.getStudentId());
-            System.out.println("✅ [DB] username: " + student.getUsername());
+            log.info("[DB] studentId: {}", student.getStudentId());
+            log.info("[DB] username: {}", student.getUsername());
 
             return student.getStudentId().equals(studentId) && student.getUsername().equals(username) &&
                     student.getPhoneNumber().equals(phoneNumber) && student.getRole().equals(role);
         }
-        System.out.println("❌ studentOptional.isPresent() == false");
         return false;
     }
 

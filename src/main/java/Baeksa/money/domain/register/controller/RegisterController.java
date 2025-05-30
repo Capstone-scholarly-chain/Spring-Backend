@@ -26,7 +26,7 @@ public class RegisterController {
 
     ///테스트 성공
     @ApiErrorCodeExample(value = ErrorCode.class, include = {""})
-    @Operation(summary = "모든 대기중인 회원가입(조직 가입) 요청 조회")
+    @Operation(summary = "모든 대기중인 회원가입(조직 가입) 요청 조회(완료)")
     @GetMapping("/pending-requests")
     public ResponseEntity<?> getPendingRequests(){
 
@@ -36,7 +36,7 @@ public class RegisterController {
 
     ////이걸 고쳐야 하는게 아니라
     @ApiErrorCodeExample(value = ErrorCode.class, include = {""})
-    @Operation(summary = "특정 id 회원가입(조직 가입) 요청 상태 조회")
+    @Operation(summary = "특정 id 회원가입(조직 가입) 요청 상태 조회(미완)")
     @PostMapping("/register-status")
     public ResponseEntity<?> getIdStatusRequests(@RequestBody RegisterDto dto) {
 

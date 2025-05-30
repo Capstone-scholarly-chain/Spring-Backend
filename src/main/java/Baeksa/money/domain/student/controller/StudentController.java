@@ -1,6 +1,8 @@
 package Baeksa.money.domain.student.controller;
 
 
+import Baeksa.money.domain.auth.anotation.ApprovedOnly;
+import Baeksa.money.domain.ledger.service.ThemeService;
 import Baeksa.money.domain.streams.dto.StreamReqDto;
 import Baeksa.money.domain.streams.service.RedisStreamProducer;
 import Baeksa.money.domain.student.dto.StudentDto;
@@ -25,48 +27,36 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class StudentController {
 
-//    private final StudentPublisher studentPublisher;
     private final StudentService studentService;
     private final RedisStreamProducer redisStreamProducer;
 
-//    @ApiErrorCodeExample(value = ErrorCode.class, include = {"STUDENT_APPLY"})
-//    @Operation(summary = "학생 가입 신청 - 학생 화면")
-//    @PostMapping("/membership")
-//    public ResponseEntity<?> membership(@AuthenticationPrincipal CustomUserDetails userDetails) {
-//
-//        Map<String, Object> map = studentPublisher.apply(userDetails.getStudentId());
-////                fcmService.sendMessage(fcmToken, "학생 가입 신청", dto.getUsername() + "이 가입 신청했습니다.");
-//        return ResponseEntity.ok(new BaseApiResponse<>(200, "PUBSUB-MEMBERSHIP", "학생 가입 신청", map));
-//    }
-
-    //프론트는 Theme, amount, description, documentURL만 넘겨주면 됨
     @Operation(summary = "학생이 입금 기입 요청을 보냄 - 학생 화면")
     @ApiErrorCodeExample(value = ErrorCode.class, include = {"STUDENT_NOTFOUND", "STUDENT_APPLY_LEDGER"})
     @PostMapping("/deposit")
     public ResponseEntity<?> deposit(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                    @RequestBody StudentDto.LedgerDto ledgerDto){
+                                    @RequestBody StudentDto.LedgerReqDto ledgerDto){
 
-        RecordId recordId = redisStreamProducer.sendMessage(new StreamReqDto.streamLedgerDto(userDetails.getStudentId(), ledgerDto.getTheme(), ledgerDto.getAmount(),
-                ledgerDto.getDescription(), ledgerDto.getDocumentURL()), "ADD_DEPOSIT");
-//        Map<String, Object> map = studentPublisher.applyLedger(userDetails.getStudentId(), ledgerDto);
-        return ResponseEntity.ok(new BaseApiResponse<>(200, "STUDENT_APPLY_LEDGER", "학생 입금 기입 요청", recordId));
+        String themeId = ledgerDto.getTheme() + "_" + ledgerDto.getYear() + "_" + ledgerDto.getSemester();
+        RecordId recordId = redisStreamProducer.sendMessage(new StreamReqDto.streamLedgerDto(userDetails.getStudentId(), themeId,
+                ledgerDto.getAmount(), ledgerDto.getDescription(), ledgerDto.getDocumentURL()), "ADD_DEPOSIT");
+        return ResponseEntity.ok(new BaseApiResponse<>(200, "ADD_DEPOSIT", "학생 입금 기입 요청", recordId));
     }
 
     @ApiErrorCodeExample(value = ErrorCode.class, include = {"STUDENT_APPROVE_WITHDRAW"})
     @Operation(summary = "학생 출금 승인 - 학생 화면")
+    @ApprovedOnly
     @PostMapping("vote-withdraw")
     public ResponseEntity<?> voteWithdraw(@AuthenticationPrincipal CustomUserDetails userDetails,
                                      @RequestBody StudentDto.VoteDto dto){
         // 투표한 사람, 찬성/반대, 출금 승인 구분할 수 있는 LedgerEntryId
-        // 투표한 사람 넣었는지?
+        // 투표한 사람 넣었는지? -> 안 넣음...
         RecordId recordId = redisStreamProducer.sendMessage(
                 new StudentDto.VoteDto(userDetails.getStudentId(), dto.isVote(), dto.getLedgerEntryId()),
                 "VOTE_WITHDRAW");
-//        Map<String, Object> map = studentPublisher.voteWithdraw(userDetails.getStudentId(), dto);
         return ResponseEntity.ok(new BaseApiResponse<>(200, "VOTE_WITHDRAW", "출금 기입 투표 승인/거절", recordId));
     }
 
-
+//    @ApprovedOnly 나중에 넣기
     @ApiErrorCodeExample(value = ErrorCode.class, include = {""})
     @Operation(summary = "학생 수 조회")
     @GetMapping("/counts")

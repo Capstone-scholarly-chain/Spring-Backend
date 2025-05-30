@@ -33,7 +33,7 @@ public class JWTFilter extends OncePerRequestFilter {
 
     private final JWTUtil jwtUtil;
     private final CustomUserDetailsService customUserDetailsService;
-//클로드 코드
+
 @Override
 protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                 FilterChain filterChain) throws ServletException, IOException {
@@ -43,7 +43,8 @@ protected void doFilterInternal(HttpServletRequest request, HttpServletResponse 
     // 토큰 검사 예외 처리: reissue API는 accessToken 만료 전제이므로 필터 제외
     if (requestURI.equals("/api/auth/reissue") ||
             requestURI.equals("/signup") ||
-            requestURI.equals("/login")) {
+            requestURI.equals("/login") ||
+            requestURI.equals("/logout")) {
         filterChain.doFilter(request, response);
         return;
     }
@@ -85,7 +86,6 @@ protected void doFilterInternal(HttpServletRequest request, HttpServletResponse 
         } else {
             log.info("accessToken이 없습니다.");
         }
-
         filterChain.doFilter(request, response); // 다음 필터로 진행
     } catch (Exception e) {
         log.error("필터 처리 중 예외 발생: {}", e.getMessage());

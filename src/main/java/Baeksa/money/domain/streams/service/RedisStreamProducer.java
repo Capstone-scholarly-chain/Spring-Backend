@@ -108,6 +108,32 @@ public class RedisStreamProducer {
         }
     }
 
+    public RecordId sendMessageUserId(String userId, String requestType) {
+
+        log.info("🚀 Processing sendMessage");
+
+        Map<String, String> data = new HashMap<>();
+        data.put("requestType", requestType);    //getName()으로 하면 패키지부터 띄움
+
+        try {
+            Map<String, String> payload = new HashMap<>();
+            payload.put("userId", userId);
+
+            String payloadJson = objectMapper.writeValueAsString(payload);
+            data.put("data", payloadJson);  // ✅ JSON 문자열로 넣기
+
+            data.put("timestamp", String.valueOf(System.currentTimeMillis()));
+
+            log.info(" [ data ] : {}", data);
+
+            return addMessage(SPRING_TO_NESTJS_STREAM, data);
+
+        } catch (JsonProcessingException e) {
+            log.error("❌ Failed to serialize payload", e);
+            throw new RuntimeException(e);
+        }
+    }
+
     public RecordId sendMessageLedgerEntryId(String requestId, String requestType) {
 
         log.info("🚀 Processing sendMessage");

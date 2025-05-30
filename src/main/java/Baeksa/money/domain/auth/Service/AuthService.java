@@ -4,6 +4,7 @@ import Baeksa.money.domain.auth.Dto.MemberDto;
 import Baeksa.money.domain.auth.Entity.MemberEntity;
 import Baeksa.money.domain.auth.converter.MemberConverter;
 import Baeksa.money.domain.auth.enums.Role;
+import Baeksa.money.domain.auth.enums.Status;
 import Baeksa.money.domain.streams.dto.StreamReqDto;
 import Baeksa.money.domain.streams.service.RedisStreamProducer;
 import Baeksa.money.global.excepction.CustomException;
@@ -47,34 +48,27 @@ public class AuthService {
         try {
             boolean ValidStudent = studentValidService.signupValid(
                     studentId, username, phoneNumber, role);
-            //아닐경우 학생정보 찾을 수 없다는 커스텀에러
             if (!ValidStudent) {
                 throw new CustomException(ErrorCode.STUDENT_NOTFOUND);
             }
             //회원가입 서비스 호출 - 여기서 중복회원, 비밀번호 2차
             MemberEntity savedEntity = memberService.signup(memberDto);
 
-            //savedEntity를 MemberDto로 변환하여 반환해야됨(컨트롤러니깐)
             MemberDto.MemberResponseDto savedDto = memberConverter.toResponseDto(savedEntity);
-//            log.info("savedDto: {}", savedDto.getStudentId());
-//            log.info("memberDto: {}", memberDto.getStudentId());
-//
-//            authPublisher.publishSignup(studentId, username, role);
+            log.info("savedDto: {}", savedDto.getStudentId());
 
-            StreamReqDto.RegisterUserDto userDto = new StreamReqDto.RegisterUserDto(savedDto.getStudentId(), savedDto.getUsername(), savedDto.getRole().name());
+            StreamReqDto.RegisterUserDto userDto = new StreamReqDto.RegisterUserDto(
+                    savedDto.getStudentId(), savedDto.getUsername(), savedDto.getRole().name());
             redisStreamProducer.sendMessage(userDto, "REGISTER_USER");
 
             return savedDto;
 
-            // 커스텀 예외는 그대로 던져서 글로벌 예외처리기에서 처리되게
         } catch (CustomException e) {
             throw e;
-
         } catch (Exception e) {
             throw new CustomException(ErrorCode.INTERNAL_SERVER);
         }
     }
-
 
     public MemberDto.LoginResponse login(String header, HttpServletResponse response) {
 
@@ -102,16 +96,17 @@ public class AuthService {
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
         String role = customUserDetails.getAuthorities().iterator().next().getAuthority();
         String username = customUserDetails.getRealUsername();  //실제 사용자 이름 가져옴
+        String status = customUserDetails.getStatus().name();
 
         // 3. JWT 발급
-        String accessToken = jwtUtil.createJwt("access", studentId, username, role,
-                role.equals("ROLE_ADMIN") ? 21600000L : 600000L); // 6시간 or 10분
+        String accessToken = jwtUtil.createJwt("access", studentId, username, role, status,
+                role.equals("ROLE_ADMIN") ? 21600000L : 6000000L); // 6시간 or 1시간
 
         String refreshToken;
         if (refreshTokenService.existsRefresh(studentId)) {
             refreshToken = refreshTokenService.getToken(studentId);
         } else {
-            refreshToken = jwtUtil.createJwt("refresh", studentId, username, role, 86400000L); // 24시간
+            refreshToken = jwtUtil.createJwt("refresh", studentId, username, role, status,86400000L); // 24시간
             refreshTokenService.save(studentId, refreshToken);
         }
 
@@ -120,12 +115,17 @@ public class AuthService {
         response.addCookie(refreshTokenService.createCookie("refresh_token", refreshToken));
 
         response.addHeader("Authorization", "Bearer " + accessToken);
-        Role roleStr = Role.valueOf(role);  //enum을 string변환한걸 다시 enum으로
+//        Role roleEnum= Role.valueOf(role);  //enum을 string변환한걸 다시 enum으로
+//        Status statusEnum = Status.valueOf(status);
         MemberDto.LoginResponse responseDto = MemberDto.LoginResponse.builder()
                 .username(customUserDetails.getRealUsername())
                 .studentId(customUserDetails.getStudentId())
-                .role(roleStr)
+                .role(role)
+                .status(status)
                 .build();
+
+//        //페이로드 정보 캐싱
+//        userCacheService.cachePayload(responseDto);
 
         return responseDto;
     }

@@ -76,6 +76,7 @@ public class MemberDto {
     public static class LoginResponse {
         private String studentId;
         private String username;
-        private Role role;
+        private String role;
+        private String status;
     }
 }

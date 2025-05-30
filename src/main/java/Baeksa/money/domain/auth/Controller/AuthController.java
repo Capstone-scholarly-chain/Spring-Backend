@@ -6,7 +6,7 @@ import Baeksa.money.domain.auth.Service.AuthService;
 import Baeksa.money.global.config.swagger.ApiErrorCodeExample;
 import Baeksa.money.global.excepction.code.BaseApiResponse;
 import Baeksa.money.global.excepction.code.ErrorCode;
-import Baeksa.money.global.redis.RedisDto;
+import Baeksa.money.global.redis.dtos.RedisDto;
 import Baeksa.money.global.redis.service.RefreshTokenService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -66,10 +66,7 @@ public class AuthController {
 
         RedisDto.TokenResponse tokenResponse = refreshTokenService.refreshValid(refresh_token);
         refreshTokenService.reissue(response, tokenResponse);
-
-        return ResponseEntity.ok(
-                new BaseApiResponse<>(200, "REISSUE", "재발행", tokenResponse)
-        );
+        return ResponseEntity.ok(new BaseApiResponse<>(200, "REISSUE", "재발행", tokenResponse));
     }
 
     @ApiErrorCodeExample(

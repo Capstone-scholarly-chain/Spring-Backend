@@ -23,15 +23,6 @@ public enum ErrorCode implements BaseErrorCode {
     BLACKLISTED(HttpStatus.FORBIDDEN, "JWT_005", "blacklist처리된 access 토큰"),
     INVALID_ACCESS(HttpStatus.BAD_REQUEST, "JWT_006", "accessToken이 유효하지 않습니다."),
 
-    // pubsub/request/approve
-    ALREADY_APPROVED(HttpStatus.CONFLICT, "PUBSUB_001", "이미 승인된 학생입니다."),
-    ALREADY_REJECTED(HttpStatus.CONFLICT, "PUBSUB_002", "이미 거절된 학생입니다."),
-    ALREADY_STATUS(HttpStatus.CONFLICT, "PUBSUB_003", "이미 등록된 학생입니다."),
-    NOTSET_STATUS(HttpStatus.UNAUTHORIZED, "PUBSUB_004", "미승인 학생입니다."),
-    NO_DEPOSIT(HttpStatus.NOT_FOUND, "PUBSUB_005", "입금 요청을 찾을 수 없습니다."),
-    NO_WITHDRAW(HttpStatus.NOT_FOUND, "PUBSUB_006", "출금 요청을 찾을 수 없습니다."),
-    INVALID_APPROVAL(HttpStatus.BAD_REQUEST, "PUBSUB_007", "승인할 수 없는 상태입니다."),
-    NO_CHANNEL(HttpStatus.NOT_FOUND, "PUBSUB_008", "등록되지 않은 채널입니다."),
 
     //SUB 조회
     JSON_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "SUB_001", "JSON 직렬화 실패"),
@@ -53,18 +44,19 @@ public enum ErrorCode implements BaseErrorCode {
     ONE_THEME_BALANCE_FETCH_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "SUB_013", "하나의 테마 잔액 조회 실패"),
     TOTAL_BALANCE_FETCH_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "SUB_014", "전체 잔액 조회 실패"),
 
+    APPROVE_FAILED(HttpStatus.FORBIDDEN, "MEMBERSHIP_001", "승인되지 않은 사용자"),
     //학생 가입 신청, 학생 입금 기입 요청, 학생 출금 승인, 학생 출금 거부,
-    STUDENT_APPLY(HttpStatus.INTERNAL_SERVER_ERROR, "STUDENT_001", "학생 가입 신청 실패."),
-    STUDENT_APPLY_LEDGER(HttpStatus.INTERNAL_SERVER_ERROR, "STUDENT_002", "학생 가입 신청 실패."),
-    STUDENT_WITHDRAW(HttpStatus.INTERNAL_SERVER_ERROR, "STUDENT_003", "학생 출금 투표 실패"),
-
-
-    //학생회 가입 승인, 학생회 가입 거절, 학생회 출금 기입 신청, 학생회 입금 승인, 학생회 입금 거절
-    COMMITTEE_APPROVE(HttpStatus.INTERNAL_SERVER_ERROR, "COMMITTEE_001", "학생회 가입 승인 실패."),
-    COMMITTEE_REJECT(HttpStatus.INTERNAL_SERVER_ERROR, "COMMITTEE_002", "학생회 가입 거절 실패."),
-    COMMITTEE_WITHDRAW(HttpStatus.INTERNAL_SERVER_ERROR, "COMMITTEE_003", "학생회 출금 기입 신청 실패."),
-    COMMITTEE_APPROVE_DEPOSIT(HttpStatus.INTERNAL_SERVER_ERROR, "COMMITTEE_004", "학생회 입금 승인 실패."),
-    COMMITTEE_REJECT_DEPOSIT(HttpStatus.INTERNAL_SERVER_ERROR, "COMMITTEE_005", "학생회 입금 거절 실패."),
+//    STUDENT_APPLY(HttpStatus.INTERNAL_SERVER_ERROR, "STUDENT_001", "학생 가입 신청 실패."),
+//    STUDENT_APPLY_LEDGER(HttpStatus.INTERNAL_SERVER_ERROR, "STUDENT_002", "학생 가입 신청 실패."),
+//    STUDENT_WITHDRAW(HttpStatus.INTERNAL_SERVER_ERROR, "STUDENT_003", "학생 출금 투표 실패"),
+//
+//
+//    //학생회 가입 승인, 학생회 가입 거절, 학생회 출금 기입 신청, 학생회 입금 승인, 학생회 입금 거절
+//    COMMITTEE_APPROVE(HttpStatus.INTERNAL_SERVER_ERROR, "COMMITTEE_001", "학생회 가입 승인 실패."),
+//    COMMITTEE_REJECT(HttpStatus.INTERNAL_SERVER_ERROR, "COMMITTEE_002", "학생회 가입 거절 실패."),
+//    COMMITTEE_WITHDRAW(HttpStatus.INTERNAL_SERVER_ERROR, "COMMITTEE_003", "학생회 출금 기입 신청 실패."),
+//    COMMITTEE_APPROVE_DEPOSIT(HttpStatus.INTERNAL_SERVER_ERROR, "COMMITTEE_004", "학생회 입금 승인 실패."),
+//    COMMITTEE_REJECT_DEPOSIT(HttpStatus.INTERNAL_SERVER_ERROR, "COMMITTEE_005", "학생회 입금 거절 실패."),
 
     //핑퐁 구조
     GET_COUNTS_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "TIMEOUT_001", "학생/학생회 조직원 수 조회 실패"),
